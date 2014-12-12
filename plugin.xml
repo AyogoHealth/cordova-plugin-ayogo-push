@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    id="com.ayogo.push"
+    version="0.0.1">
+
+    <name>Push</name>
+    <description>Push Notifications</description>
+    <keywords>cordova,ios,push,notifications</keywords>
+
+    <engines>
+        <engine name="cordova-ios" version=">= 3.0.0" />
+    </engines>
+
+    <dependency id="com.vladstirbu.cordova.promise" url="https://github.com/vstirbu/PromisesPlugin.git">
+    </dependency>
+
+    <js-module src="www/push.js" name="Push">
+        <clobbers target="window.pushRegistrationManager" />
+    </js-module>
+
+    <platform name="ios">
+        <config-file parent="/*" target="config.xml">
+            <feature name="Push">
+                <param name="ios-package" value="PushPlugin" />
+            </feature>
+        </config-file>
+
+        <source-file src="src/ios/PushPlugin.m" />
+        <header-file src="src/ios/PushPlugin.h" />
+
+        <source-file src="src/ios/AppDelegate+pushHandler.m" />
+        <header-file src="src/ios/AppDelegate+pushHandler.h" />
+    </platform>
+</plugin>
+
