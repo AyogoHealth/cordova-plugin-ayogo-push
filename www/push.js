@@ -10,6 +10,12 @@ PushRegistrationManager.prototype.register = function() {
   });
 };
 
+PushRegistrationManager.prototype.unregister = function() {
+  return new Promise(function(res, rej) {
+    exec(res, rej, 'Push', 'unregister', []);
+  });
+};
+
 PushRegistrationManager.prototype.getRegistration = function() {
   return new Promise(function(res, rej) {
     exec(res, rej, 'Push', 'getRegistration', []);

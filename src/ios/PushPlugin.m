@@ -56,6 +56,21 @@
 }
 
 
+- (void) unregister:(CDVInvokedUrlCommand*)command
+{
+    NSString* callbackId = command.callbackId;
+    CDVPluginResult* result = nil;
+
+    [[UIApplication sharedApplication] unregisterForRemoteNotifications];
+
+    result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:self.pushRegistration];
+
+    self.pushRegistration = nil;
+
+    [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+}
+
+
 - (void) getRegistration:(CDVInvokedUrlCommand*)command
 {
     NSString* callbackId = command.callbackId;

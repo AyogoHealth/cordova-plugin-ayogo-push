@@ -5,6 +5,7 @@
 @interface PushPlugin : CDVPlugin
 
 - (void) register:(CDVInvokedUrlCommand*)command;
+- (void) unregister:(CDVInvokedUrlCommand*)command;
 - (void) getRegistration:(CDVInvokedUrlCommand*)command;
 - (void) hasPermission:(CDVInvokedUrlCommand*)command;
 
