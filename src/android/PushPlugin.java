@@ -3,10 +3,14 @@
 package com.ayogo.push;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -33,6 +37,7 @@ public class PushPlugin extends CordovaPlugin
     /** The Sender ID for GCM. */
     protected String mSenderID = null;
 
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
 
     @Override
     protected void pluginInitialize() {
@@ -45,8 +50,26 @@ public class PushPlugin extends CordovaPlugin
         }
 
         mSenderID = this.preferences.getString("gcm_sender_id", null);
+        mRegistrationBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(TAG, "Token has changed");
+                /*
+                TODO: we should notify the client app to update the token on server
+                This will work as soon as the user open the app again though
+                */
+                storeRegistrationId(getApplicationContext(),null);
+            }
+        };
+
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mRegistrationBroadcastReceiver, new IntentFilter("token_refreshed"));
     }
 
+    @Override
+    public void onDestroy() {
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(mRegistrationBroadcastReceiver);
+        super.onDestroy();
+    }
 
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callback)

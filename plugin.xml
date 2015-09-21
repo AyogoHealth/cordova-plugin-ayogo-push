@@ -47,8 +47,14 @@
             <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
             <uses-permission android:name="$PACKAGE_NAME.permission.C2D_MESSAGE" />
             <permission android:name="$PACKAGE_NAME.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+            <service android:name="com.ayogo.push.InstanceIDListenerService" android:exported="false">
+                <intent-filter>
+                    <action android:name="com.google.android.gms.iid.InstanceID"/>
+                </intent-filter>
+            </service>
         </config-file>
 
+        <source-file src="src/android/InstanceIDListenerService.java" target-dir="src/com/ayogo/push" />
         <source-file src="src/android/PushPlugin.java" target-dir="src/com/ayogo/push" />
 
         <framework src="src/android/push.gradle" custom="true" type="gradleReference" />
