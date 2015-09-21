@@ -12,18 +12,14 @@ import android.util.Log;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
-
-import java.io.IOException;
+import com.google.android.gms.iid.InstanceID;
 
 import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
-
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+
+import java.io.IOException;
 
 public class PushPlugin extends CordovaPlugin
 {
@@ -56,14 +52,14 @@ public class PushPlugin extends CordovaPlugin
     public boolean execute(String action, JSONArray args, final CallbackContext callback)
     {
         if (action.equals("register")) {
-            final GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(getApplicationContext());
-
             String regId = getRegistration(getApplicationContext());
+
             if (regId == null) {
                 cordova.getThreadPool().execute(new Runnable() {
                     public void run() {
                         try {
-                            String new_regId = gcm.register(mSenderID);
+                            InstanceID instanceID = InstanceID.getInstance(getApplicationContext());
+                            String new_regId = instanceID.getToken(mSenderID, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
 
                             storeRegistrationId(getApplicationContext(), new_regId);
 
@@ -88,8 +84,8 @@ public class PushPlugin extends CordovaPlugin
                 cordova.getThreadPool().execute(new Runnable() {
                     public void run() {
                         try {
-                            GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(getApplicationContext());
-                            gcm.unregister();
+                            InstanceID instanceID = InstanceID.getInstance(getApplicationContext());
+                            instanceID.deleteToken(mSenderID, GoogleCloudMessaging.INSTANCE_ID_SCOPE);
 
                             storeRegistrationId(getApplicationContext(), null);
 
