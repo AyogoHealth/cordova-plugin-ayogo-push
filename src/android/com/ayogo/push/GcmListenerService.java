@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 public class GcmListenerService extends com.google.android.gms.gcm.GcmListenerService {
 
     private static final String TAG = "GcmListenerService";
@@ -28,9 +30,14 @@ public class GcmListenerService extends com.google.android.gms.gcm.GcmListenerSe
 
         String title = data.getString("title");
         String message = data.getString("message");
+        String url = null;
 
-        Log.d(TAG, "title: " + title);
-        Log.d(TAG, "message: " + message);
+        try{
+            JSONObject customData = new JSONObject(data.getString("custom_data"));
+            url = customData.getString("url");
+        }catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
 
         if(title == null || message == null){
             Log.w(TAG, "Could not find title or message. Ignoring notification...");
@@ -49,7 +56,8 @@ public class GcmListenerService extends com.google.android.gms.gcm.GcmListenerSe
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                                                 .setContentTitle(title)
-                                                .setContentText(message);
+                                                .setContentText(message)
+                                                .setAutoCancel(true);
         if(iconRes > -1){
             builder.setSmallIcon(iconRes);
         }
@@ -65,6 +73,12 @@ public class GcmListenerService extends com.google.android.gms.gcm.GcmListenerSe
 
         Intent launchIntent = getApplicationContext().getPackageManager().getLaunchIntentForPackage(packageName);
         launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        launchIntent.setAction("push");
+        if(url != null){
+            Bundle bundle = new Bundle();
+            bundle.putString("url", url);
+            launchIntent.putExtras(bundle);
+        }
 
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);

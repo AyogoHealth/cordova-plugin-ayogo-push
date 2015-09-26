@@ -63,6 +63,8 @@ public class PushPlugin extends CordovaPlugin
         };
 
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mRegistrationBroadcastReceiver, new IntentFilter("token_refreshed"));
+
+        onNewIntent(cordova.getActivity().getIntent());
     }
 
     @Override
@@ -150,6 +152,26 @@ public class PushPlugin extends CordovaPlugin
         return false;
     }
 
+    public void onNewIntent(Intent intent) {
+        if(intent == null){
+            return;
+        }
+
+        if(intent.getAction() != null && intent.getAction().equalsIgnoreCase("push")) {
+            handlePushIntent(intent);
+        }
+    }
+
+    private void handlePushIntent(Intent intent) {
+        if(intent.getExtras() != null && intent.getExtras().getString("url") != null) {
+            final String url = intent.getExtras().getString("url");
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+                    webView.loadUrl("javascript:window.handleOpenURL('" + url + "')");
+                }
+            });
+        }
+    }
 
     /**
      * Gets the application context from cordova's main activity.
