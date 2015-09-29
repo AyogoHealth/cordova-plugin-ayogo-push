@@ -22,8 +22,11 @@ import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PushPlugin extends CordovaPlugin
 {
@@ -88,14 +91,14 @@ public class PushPlugin extends CordovaPlugin
 
                             storeRegistrationId(getApplicationContext(), new_regId);
 
-                            callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, new_regId));
+                            callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, parseRegistrationData(new_regId)));
                         } catch (IOException ex) {
                             callback.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "AbortError"));
                         }
                     }
                 });
             } else {
-                callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, regId));
+                callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, parseRegistrationData(regId)));
             }
 
             return true;
@@ -131,7 +134,7 @@ public class PushPlugin extends CordovaPlugin
             String regId = getRegistration(getApplicationContext());
 
             if (regId != null) {
-                callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, regId));
+                callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, parseRegistrationData(regId)));
             } else {
                 callback.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "AbortError"));
             }
@@ -150,6 +153,13 @@ public class PushPlugin extends CordovaPlugin
 
         callback.sendPluginResult(new PluginResult(PluginResult.Status.INVALID_ACTION));
         return false;
+    }
+
+    private JSONObject parseRegistrationData(String registrationId){
+        Map<String,String> regData = new HashMap<String,String>();
+        regData.put("endpoint", "android");
+        regData.put("registrationId", registrationId);
+        return new JSONObject(regData);
     }
 
     public void onNewIntent(Intent intent) {
