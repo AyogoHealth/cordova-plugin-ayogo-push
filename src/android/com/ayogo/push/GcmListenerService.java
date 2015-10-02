@@ -7,6 +7,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -32,34 +35,47 @@ public class GcmListenerService extends com.google.android.gms.gcm.GcmListenerSe
         String message = data.getString("message");
         String url = null;
 
-        try{
+        try {
             JSONObject customData = new JSONObject(data.getString("custom_data"));
             url = customData.getString("url");
-        }catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+        } catch (Exception e) {
+            Log.e(TAG, "Could not find url from customData");
         }
 
-        if(title == null || message == null){
+        if(title == null || message == null) {
             Log.w(TAG, "Could not find title or message. Ignoring notification...");
             return;
         }
 
         String packageName = getApplicationContext().getPackageName();
 
-        int iconRes = -1;
-
-        try{
-            iconRes = getResources().getIdentifier("icon", "drawable", packageName);
-        }catch (Exception e){
-            Log.w(TAG, "Could not find icon resource");
-        }
-
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                                                 .setContentTitle(title)
                                                 .setContentText(message)
                                                 .setAutoCancel(true);
-        if(iconRes > -1){
-            builder.setSmallIcon(iconRes);
+
+        try {
+            Resources r = getResources();
+
+            int smallIconRes = r.getIdentifier("notification", "drawable", packageName);
+
+            smallIconRes = smallIconRes > 0 ? smallIconRes : r.getIdentifier("icon", "drawable", packageName);
+
+            if(smallIconRes > 0)  {
+                builder.setSmallIcon(smallIconRes);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Could not find small icon resource");
+        }
+
+        try {
+            int largeIconRes = getResources().getIdentifier("icon", "drawable", packageName);
+            if(largeIconRes > 0) {
+                Bitmap largetIcon = BitmapFactory.decodeResource(getResources(), largeIconRes);
+                builder.setLargeIcon(largetIcon);
+            }
+        }catch (Exception e) {
+            Log.w(TAG, "Could not find large icon resource");
         }
 
         SharedPreferences prefs = this.getSharedPreferences(TAG, Context.MODE_PRIVATE);
@@ -74,7 +90,7 @@ public class GcmListenerService extends com.google.android.gms.gcm.GcmListenerSe
         Intent launchIntent = getApplicationContext().getPackageManager().getLaunchIntentForPackage(packageName);
         launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         launchIntent.setAction("push");
-        if(url != null){
+        if(url != null) {
             Bundle bundle = new Bundle();
             bundle.putString("url", url);
             launchIntent.putExtras(bundle);
