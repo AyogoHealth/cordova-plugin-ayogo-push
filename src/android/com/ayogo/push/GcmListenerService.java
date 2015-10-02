@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -48,17 +49,19 @@ public class GcmListenerService extends com.google.android.gms.gcm.GcmListenerSe
 
         String packageName = getApplicationContext().getPackageName();
 
-        boolean lollipopOrHigher = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP;
-
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                                                 .setContentTitle(title)
                                                 .setContentText(message)
                                                 .setAutoCancel(true);
 
         try {
-            String smallIconName = lollipopOrHigher ? "notification" : "icon";
-            int smallIconRes = getResources().getIdentifier(smallIconName, "drawable", packageName);
-            if(smallIconRes > 0) {
+            Resources r = getResources();
+
+            int smallIconRes = r.getIdentifier("notification", "drawable", packageName);
+
+            smallIconRes = smallIconRes > 0 ? smallIconRes : r.getIdentifier("icon", "drawable", packageName);
+
+            if(smallIconRes > 0)  {
                 builder.setSmallIcon(smallIconRes);
             }
         } catch (Exception e) {
