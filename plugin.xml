@@ -73,7 +73,7 @@
         <source-file src="src/android/com/ayogo/push/GcmListenerService.java" target-dir="src/com/ayogo/push" />
         <source-file src="src/android/com/ayogo/push/PushPlugin.java" target-dir="src/com/ayogo/push" />
 
-        <framework src="src/android/push.gradle" custom="true" type="gradleReference" />
+        <framework src="com.google.android.gms:play-services-gcm:+" />
     </platform>
 </plugin>
 
