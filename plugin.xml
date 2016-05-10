@@ -25,6 +25,8 @@
 
         <source-file src="src/ios/PushPlugin.swift" />
         <source-file src="src/ios/CDVAppDelegate+Push.swift" />
+
+        <hook type="before_compile" src="src/ios/swift-hook.js" />
     </platform>
 
     <platform name="android">
