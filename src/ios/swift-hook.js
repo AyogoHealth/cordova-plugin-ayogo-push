@@ -3,6 +3,8 @@
 const fs = require('fs');
 
 module.exports = function(context) {
+    console.warn('UPDATING the Xcode Project files');
+
     const encoding = 'utf-8';
     const filepath = 'platforms/ios/cordova/build-release.xcconfig';
     const filepathDebug = 'platforms/ios/cordova/build-debug.xcconfig';
