@@ -3,20 +3,17 @@
 const fs = require('fs');
 
 module.exports = function(context) {
-    console.warn('UPDATING the Xcode Project files');
+    if (context.opts.cordova.platforms.indexOf('ios') >= 0) {
+        console.warn('UPDATING the Xcode Project files');
 
-    const encoding = 'utf-8';
-    const filepath = 'platforms/ios/cordova/build-release.xcconfig';
-    const filepathDebug = 'platforms/ios/cordova/build-debug.xcconfig';
+        const encoding = 'utf-8';
+        const filepath = 'platforms/ios/cordova/build.xcconfig';
 
-    var xcconfig = fs.readFileSync(filepath, encoding);
-    var xcconfigDebug = fs.readFileSync(filepathDebug, encoding);
+        var xcconfig = fs.readFileSync(filepath, encoding);
 
-    const content = '\nEMBEDDED_CONTENT_CONTAINS_SWIFT = "YES"\nLD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks"';
+        const content = '\nEMBEDDED_CONTENT_CONTAINS_SWIFT = "YES"\nLD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks"';
 
-    xcconfig += content;
-    fs.writeFileSync(filepath, xcconfig, encoding);
-
-    xcconfigDebug += content;
-    fs.writeFileSync(filepathDebug, xcconfigDebug, encoding);
+        xcconfig += content;
+        fs.writeFileSync(filepath, xcconfig, encoding);
+    }
 };
