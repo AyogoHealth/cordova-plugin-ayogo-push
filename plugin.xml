@@ -1,35 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-    id="com.ayogo.push"
-    version="0.0.1">
+    id="cordova-plugin-ayogo-push"
+    version="1.0.0">
 
     <name>Push</name>
     <description>Push Notifications</description>
     <keywords>cordova,ios,push,notifications</keywords>
 
     <engines>
-        <engine name="cordova-ios" version=">= 3.0.0" />
+        <engine name="cordova-ios" version=">= 4.0.0" />
     </engines>
-
-    <dependency id="es6-promise-plugin" url="https://github.com/vstirbu/PromisesPlugin.git">
-    </dependency>
 
     <js-module src="www/push.js" name="Push">
         <clobbers target="window.pushRegistrationManager" />
     </js-module>
 
+    <hook type="before_compile" src="src/ios/swift-hook.js" />
+
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
             <feature name="Push">
-                <param name="ios-package" value="PushPlugin" />
+                <param name="ios-package" value="CDVPushPlugin" />
+                <param name="onload" value="true" />
             </feature>
         </config-file>
 
-        <source-file src="src/ios/PushPlugin.m" />
-        <header-file src="src/ios/PushPlugin.h" />
-
-        <source-file src="src/ios/AppDelegate+pushHandler.m" />
-        <header-file src="src/ios/AppDelegate+pushHandler.h" />
+        <source-file src="src/ios/PushPlugin.swift" />
+        <source-file src="src/ios/CDVAppDelegate+Push.swift" />
     </platform>
 
     <platform name="android">

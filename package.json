@@ -1,0 +1,29 @@
+{
+  "name": "cordova-plugin-ayogo-push",
+  "version": "1.0.0-dev",
+  "description": "Push Notifications for Cordova",
+  "private": true,
+  "cordova": {
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "keywords": [
+    "cordova",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios"
+  ],
+  "engines": [
+    {
+      "name": "cordova-android",
+      "version": ">=4.0.0"
+    },
+    {
+      "name": "cordova-ios",
+      "version": ">=4.0.0"
+    }
+  ]
+}
+
