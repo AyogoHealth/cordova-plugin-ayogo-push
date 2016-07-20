@@ -1,0 +1,25 @@
+// Copyright 2016 Ayogo Health Inc.
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.1.0'
+        classpath 'com.google.gms:google-services:3.0.0'
+    }
+}
+
+repositories {
+    jcenter()
+    mavenLocal()
+}
+
+dependencies {
+    compile 'com.google.android.gms:play-services:9.2.1'
+    compile 'com.google.firebase:firebase-messaging:9.2.0'
+}
+
+apply plugin: com.google.gms.googleservices.GoogleServicesPlugin
