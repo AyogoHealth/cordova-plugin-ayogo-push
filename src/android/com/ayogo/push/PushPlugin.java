@@ -5,7 +5,6 @@ package com.ayogo.push;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -18,6 +17,7 @@ import java.util.Map;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -36,11 +36,11 @@ public class PushPlugin extends CordovaPlugin
 
     @Override
     protected void pluginInitialize() {
-        Log.v(TAG, "Initializing");
+        LOG.v(TAG, "Initializing");
 
         // Check device for Play Services APK.
         if (!checkPlayServices()) {
-            Log.w(TAG, "No valid Google Play Services APK found.");
+            LOG.w(TAG, "No valid Google Play Services APK found.");
             return;
         }
 
@@ -91,7 +91,7 @@ public class PushPlugin extends CordovaPlugin
             return true;
         }
 
-        Log.d(TAG, "Tried to call " + action + " with " + args.toString());
+        LOG.i(TAG, "Tried to call " + action + " with " + args.toString());
 
         callback.sendPluginResult(new PluginResult(PluginResult.Status.INVALID_ACTION));
         return false;
@@ -142,7 +142,7 @@ public class PushPlugin extends CordovaPlugin
             if (googleApi.isUserResolvableError(resultCode)) {
                 googleApi.getErrorDialog(act, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
             } else {
-                Log.i(TAG, "This device is not supported.");
+                LOG.w(TAG, "This device is not supported.");
             }
             return false;
         }
