@@ -8,16 +8,14 @@ function NotificationInstance(data) {
 }
 
 NotificationInstance.prototype.close = function() {
-  exec(res, rej, 'Push', 'closeNotification', [this.data]);
-}
-
-
+  exec(res, rej, 'Notification', 'closeNotification', [this.data]);
+};
 
 function NotificationManager() { }
 
 NotificationManager.prototype.showNotification = function(title, options) {
   return new Promise(function(res, rej) {
-    exec(res, rej, 'Push', 'showNotification', [title, options]);
+    exec(res, rej, 'Notification', 'showNotification', [title, options]);
   });
 };
 
@@ -27,9 +25,8 @@ NotificationManager.prototype.getNotifications = function() {
       res(notes.map(function(note) { return new NotificationInstance(note); }));
     }
 
-    exec(onsuccess, rej, 'Push', 'getNotifications', []);
+    exec(onsuccess, rej, 'Notification', 'getNotifications', []);
   });
 };
 
 module.exports = new NotificationManager();
-
