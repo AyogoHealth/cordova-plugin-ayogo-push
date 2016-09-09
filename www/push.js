@@ -6,19 +6,19 @@ function PushRegistrationManager() { }
 
 PushRegistrationManager.prototype.register = function() {
   return new Promise(function(res, rej) {
-    exec(res, rej, 'Push', 'register', []);
+    exec(res, rej, 'Push', 'registerPush', []);
   });
 };
 
 PushRegistrationManager.prototype.unregister = function() {
   return new Promise(function(res, rej) {
-    exec(res, rej, 'Push', 'unregister', []);
+    exec(res, rej, 'Push', 'unregisterPush', []);
   });
 };
 
 PushRegistrationManager.prototype.getRegistration = function() {
   return new Promise(function(res, rej) {
-    exec(res, rej, 'Push', 'getRegistration', []);
+    exec(res, rej, 'Push', 'getPushRegistration', []);
   });
 };
 

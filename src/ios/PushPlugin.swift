@@ -1,5 +1,9 @@
 /*! Copyright 2016 Ayogo Health Inc. */
 
+#if swift(>=2.3)
+import UserNotifications
+#endif
+
 @objc(CDVPushPlugin) class PushPlugin : CDVPlugin {
     private var registrationCallback : String? = nil;
 
@@ -29,7 +33,7 @@
         // Re-register for notifications if we think we're registered
         let permission = NSUserDefaults.standardUserDefaults().stringForKey(CDV_PushPreference);
         if permission == "granted" {
-            UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil));
+            self._doRegister();
         }
 
         let registration = NSUserDefaults.standardUserDefaults().objectForKey(CDV_PushRegistration);
@@ -40,60 +44,7 @@
 
 
 
-    func register(command : CDVInvokedUrlCommand) {
-        self.registrationCallback = command.callbackId;
-
-        let permission = NSUserDefaults.standardUserDefaults().stringForKey(CDV_PushPreference);
-
-        if permission != "denied" {
-            UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil));
-            UIApplication.sharedApplication().registerForRemoteNotifications();
-        } else {
-            let result = CDVPluginResult(status:CDVCommandStatus_ERROR, messageAsString:"AbortError");
-            self.commandDelegate.sendPluginResult(result, callbackId: self.registrationCallback);
-
-            self.registrationCallback = nil;
-        }
-    }
-
-
-    func unregister(command : CDVInvokedUrlCommand) {
-        UIApplication.sharedApplication().unregisterForRemoteNotifications();
-
-        let registration = NSUserDefaults.standardUserDefaults().objectForKey(CDV_PushRegistration);
-
-        if registration == nil {
-            let result = CDVPluginResult(status:CDVCommandStatus_ERROR, messageAsString:"AbortError");
-            self.commandDelegate.sendPluginResult(result, callbackId: command.callbackId);
-            return;
-        }
-
-        NSUserDefaults.standardUserDefaults().removeObjectForKey(CDV_PushRegistration);
-
-        let result = CDVPluginResult(status:CDVCommandStatus_OK, messageAsDictionary:registration as! [String:String]);
-        self.commandDelegate.sendPluginResult(result, callbackId: command.callbackId);
-    }
-
-
-    func getRegistration(command : CDVInvokedUrlCommand) {
-        // Fail immediately if notifications aren't registered
-        if !UIApplication.sharedApplication().isRegisteredForRemoteNotifications() {
-            let result = CDVPluginResult(status:CDVCommandStatus_ERROR, messageAsString:"AbortError");
-            self.commandDelegate.sendPluginResult(result, callbackId: command.callbackId);
-            return;
-        }
-
-        let registration = NSUserDefaults.standardUserDefaults().objectForKey(CDV_PushRegistration);
-
-        if registration == nil {
-            let result = CDVPluginResult(status:CDVCommandStatus_ERROR, messageAsString:"AbortError");
-            self.commandDelegate.sendPluginResult(result, callbackId: command.callbackId);
-        } else {
-            let result = CDVPluginResult(status:CDVCommandStatus_OK, messageAsDictionary:registration as! [String:String]);
-            self.commandDelegate.sendPluginResult(result, callbackId: command.callbackId);
-        }
-    }
-
+    /* Notification Permission ***********************************************/
 
     func hasPermission(command : CDVInvokedUrlCommand) {
         var permission = NSUserDefaults.standardUserDefaults().stringForKey(CDV_PushPreference);
@@ -113,6 +64,24 @@
     }
 
 
+    internal func _doRegister() {
+        #if swift(>=2.3)
+        if #available(iOS 10.0, *) {
+            let options: UNAuthorizationOptions = [.Badge, .Alert, .Sound];
+
+            UNUserNotificationCenter.currentNotificationCenter().requestAuthorizationWithOptions(options) { (granted, error) in
+                if granted {
+                    NSUserDefaults.standardUserDefaults().setObject("granted", forKey:CDV_PushPreference);
+                } else {
+                    NSUserDefaults.standardUserDefaults().setObject("denied", forKey:CDV_PushPreference);
+                }
+            }
+        } else
+        #endif
+
+        // Note that this falls into the `else` block from above on iOS 10
+        UIApplication.sharedApplication().registerUserNotificationSettings(UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil));
+    }
 
 
     internal func _didRegisterUserNotificationSettings(notification : NSNotification) {
@@ -122,6 +91,64 @@
             NSUserDefaults.standardUserDefaults().setObject("denied", forKey:CDV_PushPreference);
         } else {
             NSUserDefaults.standardUserDefaults().setObject("granted", forKey:CDV_PushPreference);
+        }
+    }
+
+
+
+    /* Push Notification Registrations ***************************************/
+
+    func registerPush(command : CDVInvokedUrlCommand) {
+        self.registrationCallback = command.callbackId;
+
+        let permission = NSUserDefaults.standardUserDefaults().stringForKey(CDV_PushPreference);
+
+        if permission != "denied" {
+            self._doRegister();
+            UIApplication.sharedApplication().registerForRemoteNotifications();
+        } else {
+            let result = CDVPluginResult(status:CDVCommandStatus_ERROR, messageAsString:"AbortError");
+            self.commandDelegate.sendPluginResult(result, callbackId: self.registrationCallback);
+
+            self.registrationCallback = nil;
+        }
+    }
+
+
+    func unregisterPush(command : CDVInvokedUrlCommand) {
+        UIApplication.sharedApplication().unregisterForRemoteNotifications();
+
+        let registration = NSUserDefaults.standardUserDefaults().objectForKey(CDV_PushRegistration);
+
+        if registration == nil {
+            let result = CDVPluginResult(status:CDVCommandStatus_ERROR, messageAsString:"AbortError");
+            self.commandDelegate.sendPluginResult(result, callbackId: command.callbackId);
+            return;
+        }
+
+        NSUserDefaults.standardUserDefaults().removeObjectForKey(CDV_PushRegistration);
+
+        let result = CDVPluginResult(status:CDVCommandStatus_OK, messageAsDictionary:registration as! [String:String]);
+        self.commandDelegate.sendPluginResult(result, callbackId: command.callbackId);
+    }
+
+
+    func getPushRegistration(command : CDVInvokedUrlCommand) {
+        // Fail immediately if notifications aren't registered
+        if !UIApplication.sharedApplication().isRegisteredForRemoteNotifications() {
+            let result = CDVPluginResult(status:CDVCommandStatus_ERROR, messageAsString:"AbortError");
+            self.commandDelegate.sendPluginResult(result, callbackId: command.callbackId);
+            return;
+        }
+
+        let registration = NSUserDefaults.standardUserDefaults().objectForKey(CDV_PushRegistration);
+
+        if registration == nil {
+            let result = CDVPluginResult(status:CDVCommandStatus_ERROR, messageAsString:"AbortError");
+            self.commandDelegate.sendPluginResult(result, callbackId: command.callbackId);
+        } else {
+            let result = CDVPluginResult(status:CDVCommandStatus_OK, messageAsDictionary:registration as! [String:String]);
+            self.commandDelegate.sendPluginResult(result, callbackId: command.callbackId);
         }
     }
 
@@ -149,6 +176,51 @@
         self.registrationCallback = nil;
     }
 
+
+
+    /* Local Notification Scheduling *****************************************/
+
+    func showNotification(command : CDVInvokedUrlCommand) {
+        let title   = command.argumentAtIndex(0) as! String;
+        var options = command.argumentAtIndex(1) as? NSDictionary;
+
+
+        #if swift(>=2.3)
+        if #available(iOS 10.0, *) {
+            let content = UNMutableNotificationContent();
+
+            if let body = options?.objectForKey("body") as? String {
+                content.title = title;
+                content.body = body;
+            } else {
+                content.body = title;
+            }
+
+            content.threadIdentifier = options?.objectForKey("tag") as? String;
+            content.sound = UNNotificationSound.default();
+            content.userInfo = options?.objectForKey("data") as? NSDictionary;
+
+            /*
+            if let delay = options?.objectForKey("at") as? Double {
+                let 
+            }
+            */
+        }
+        #endif
+    }
+
+
+    func closeNotification(command : CDVInvokedUrlCommand) {
+    }
+
+    func getNotifications(command : CDVInvokedUrlCommand) {
+    }
+
+
+
+
+
+    /* Notification Launch URL handling **************************************/
 
     internal func _didFinishLaunchingWithOptions(notification : NSNotification) {
         UIApplication.sharedApplication().applicationIconBadgeNumber = 0;

@@ -53,7 +53,7 @@ public class PushPlugin extends CordovaPlugin
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callback)
     {
-        if (action.equals("register") || action.equals("getRegistration")) {
+        if (action.equals("registerPush") || action.equals("getPushRegistration")) {
             cordova.getThreadPool().execute(new Runnable() {
                 public void run() {
                     try {
@@ -69,7 +69,7 @@ public class PushPlugin extends CordovaPlugin
         }
 
 
-        if (action.equals("unregister")) {
+        if (action.equals("unregisterPush")) {
             cordova.getThreadPool().execute(new Runnable() {
                 public void run() {
                     try {
