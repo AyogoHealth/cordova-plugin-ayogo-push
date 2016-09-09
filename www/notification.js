@@ -15,9 +15,9 @@ NotificationInstance.prototype.close = function() {
 
 function NotificationManager() { }
 
-NotificationManager.prototype.showNotification = function() {
+NotificationManager.prototype.showNotification = function(title, options) {
   return new Promise(function(res, rej) {
-    exec(res, rej, 'Push', 'showNotification', []);
+    exec(res, rej, 'Push', 'showNotification', [title, options]);
   });
 };
 

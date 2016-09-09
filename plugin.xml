@@ -15,6 +15,10 @@
         <clobbers target="window.pushRegistrationManager" />
     </js-module>
 
+    <js-module src="www/notification.js" name="Notification">
+        <clobbers target="window.notificationManager" />
+    </js-module>
+
     <hook type="before_compile" src="src/ios/swift-hook.js" />
 
     <platform name="ios">
