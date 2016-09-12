@@ -29,7 +29,7 @@ function Notification(title, options) {
 }
 
 Notification.prototype.close = function() {
-  exec(res, rej, 'Notification', 'closeNotification', [this.data]);
+  exec(res, rej, 'Notification', 'closeNotification', [this.tag]);
 };
 
 function NotificationManager() { }
