@@ -28,6 +28,10 @@
                 <param name="ios-package" value="CDVPushPlugin" />
                 <param name="onload" value="true" />
             </feature>
+
+            <feature name="Notification">
+                <param name="ios-package" value="CDVPushPlugin" />
+            </feature>
         </config-file>
 
         <source-file src="src/ios/PushPlugin.swift" />
