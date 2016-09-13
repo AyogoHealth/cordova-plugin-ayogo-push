@@ -8,7 +8,7 @@ import android.content.Intent;
 
 import org.apache.cordova.LOG;
 
-abstract public class RestoreReceiver extends BroadcastReceiver {
+public class RestoreReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive (Context context, Intent intent) {
