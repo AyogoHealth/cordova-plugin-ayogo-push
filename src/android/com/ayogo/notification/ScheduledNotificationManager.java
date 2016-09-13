@@ -189,6 +189,7 @@ public class ScheduledNotificationManager {
             .setContentTitle(scheduledNotification.title)
             .setContentText(scheduledNotification.body)
             .setTicker(scheduledNotification.body)
+            .setPriority(Notification.PRIORITY_HIGH)
             .setAutoCancel(true);
 
         // TODO: add sound support
