@@ -10,29 +10,40 @@ var exec = require('cordova/exec');
  * @param  {string} options.tag       - unique identifier for the notification
  * @param  {string} options.title     - same as the string param
  * @param  {string} options.body      - body text
- * @param  {number} options.timestamp - unix timestamp set to when the notification should trigger
+ * @param  {number} options.at        - unix timestamp set to when the notification should trigger
  * @param  {string} options.icon      - notification icon url
  * @param  {string} options.badge     - notification badge url
  * @param  {object} options.data      - any extra data associated with the notification
  *
- * @return {Promise} a promise that resolves when the notification has been scheduled.
  */
 function Notification(title, options) {
   this.title     = title;
   this.title     = this.title || options.title;
   this.tag       = options.tag;
   this.body      = options.body;
-  this.timestamp = options.timestamp;
+  this.at        = options.at;
   this.icon      = options.icon;
   this.badge     = options.badge;
-  this.data      = data;
+  this.data      = options.data;
 }
 
+var noop = function() { };
+
 Notification.prototype.close = function() {
-  exec(res, rej, 'Notification', 'closeNotification', [this.tag]);
+  exec(noop, noop, 'Notification', 'closeNotification', [this.tag]);
 };
 
 function NotificationManager() { }
+
+NotificationManager.prototype.requestPermission = function(cb) {
+  if (cb) {
+      exec(cb, noop, 'Notification', 'requestPermission', []);
+  } else {
+    return new Promise(function(res, rej) {
+      exec(res, rej, 'Notification', 'requestPermission', []);
+    });
+  }
+};
 
 NotificationManager.prototype.showNotification = function(title, options) {
   return new Promise(function(res, rej) {
