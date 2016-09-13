@@ -40,14 +40,12 @@ public class ScheduledNotificationManager {
     private static final String INTENT_CATEGORY = "android.intent.category.DEFAULT";
     private static final int INTENT_REQUEST_CODE = 0;
 
-    private static Class<?> receiver = TriggerReceiver.class;
-
     public ScheduledNotificationManager(Context ctx) {
         this.context = ctx;
     }
 
     public ScheduledNotification scheduleNotification(String title, JSONObject options) {
-        LOG.e(NotificationPlugin.TAG, "scheduleNotification: "+title);
+        LOG.v(NotificationPlugin.TAG, "scheduleNotification: "+title);
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
@@ -55,16 +53,16 @@ public class ScheduledNotificationManager {
 
         saveNotification(notification);
 
-        LOG.e(NotificationPlugin.TAG, "create Intent: "+notification.tag);
+        LOG.v(NotificationPlugin.TAG, "create Intent: "+notification.tag);
 
-        Intent intent = new Intent(context, receiver);
+        Intent intent = new Intent(context, TriggerReceiver.class);
         intent.setAction(notification.tag);
 
         PendingIntent pi = PendingIntent.getBroadcast(context, INTENT_REQUEST_CODE, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         long alarmTime = notification.at;
 
-        LOG.e(NotificationPlugin.TAG, "schedule alarm for: "+alarmTime);
+        LOG.v(NotificationPlugin.TAG, "schedule alarm for: "+alarmTime);
 
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pi);
 
@@ -72,7 +70,7 @@ public class ScheduledNotificationManager {
     }
 
     public void rescheduleNotifications() {
-        LOG.e(NotificationPlugin.TAG, "rescheduleNotifications");
+        LOG.v(NotificationPlugin.TAG, "rescheduleNotifications");
 
         JSONArray notifications = getNotifications();
         long now = System.currentTimeMillis();
@@ -83,11 +81,11 @@ public class ScheduledNotificationManager {
                 long at = opts.optLong("at", 0);
 
                 if (at > now) {
-                    LOG.e(NotificationPlugin.TAG, "notification is in the future");
+                    LOG.v(NotificationPlugin.TAG, "notification is in the future");
                     //Reschedule the notification
                     scheduleNotification(opts.optString("title", null), opts);
                 } else {
-                    LOG.e(NotificationPlugin.TAG, "notification is in the past");
+                    LOG.v(NotificationPlugin.TAG, "notification is in the past");
                     cancelNotification(opts.getString("tag"));
                 }
             } catch(JSONException e) {}
@@ -95,7 +93,7 @@ public class ScheduledNotificationManager {
     }
 
     public JSONArray getNotifications() {
-        LOG.e(NotificationPlugin.TAG, "getNotifications");
+        LOG.v(NotificationPlugin.TAG, "getNotifications");
 
         SharedPreferences prefs = getPrefs();
         Map<String, ?> notes = prefs.getAll();
@@ -109,13 +107,13 @@ public class ScheduledNotificationManager {
             } catch(JSONException e) {}
         }
 
-        LOG.e(NotificationPlugin.TAG, notifications.toString());
+        LOG.v(NotificationPlugin.TAG, notifications.toString());
 
         return notifications;
     }
 
     public ScheduledNotification getNotification(String tag) {
-        LOG.e(NotificationPlugin.TAG, "getNotification: "+ tag);
+        LOG.v(NotificationPlugin.TAG, "getNotification: "+ tag);
 
         JSONArray notifications = getNotifications();
 
@@ -123,17 +121,17 @@ public class ScheduledNotificationManager {
             try {
                 JSONObject opts = notifications.getJSONObject(i);
                 if (tag.equals(opts.optString("tag", null))) {
-                    LOG.e(NotificationPlugin.TAG, "found Notification: "+ opts.toString());
+                    LOG.v(NotificationPlugin.TAG, "found Notification: "+ opts.toString());
                     return new ScheduledNotification(opts.optString("title", null), opts);
                 }
             } catch(JSONException e) {}
         }
-        LOG.e(NotificationPlugin.TAG, "no notification found");
+        LOG.v(NotificationPlugin.TAG, "no notification found");
         return null;
     }
 
     public ScheduledNotification cancelNotification(String tag) {
-        LOG.e(NotificationPlugin.TAG, "cancelNotification: "+tag);
+        LOG.v(NotificationPlugin.TAG, "cancelNotification: "+tag);
         SharedPreferences prefs = getPrefs();
         SharedPreferences.Editor editor = prefs.edit();
 
@@ -144,17 +142,17 @@ public class ScheduledNotificationManager {
             try {
                 JSONObject value = new JSONObject(notifications.get(key).toString());
                 String ntag = value.optString("tag");
-                LOG.e(NotificationPlugin.TAG, "checking Notification: "+ value.toString());
+                LOG.v(NotificationPlugin.TAG, "checking Notification: "+ value.toString());
                 if (ntag != null && ntag.equals(tag)) {
-                    LOG.e(NotificationPlugin.TAG, "found Notification: "+ value.toString());
+                    LOG.v(NotificationPlugin.TAG, "found Notification: "+ value.toString());
                     notification = new ScheduledNotification(value.optString("title", null), value);
 
                     editor.remove(key);
 
 
-                    LOG.e(NotificationPlugin.TAG, "unscheduling Notification: ");
+                    LOG.v(NotificationPlugin.TAG, "unscheduling Notification: ");
                     //unschedule the alarm
-                    Intent intent = new Intent(context, receiver);
+                    Intent intent = new Intent(context, TriggerReceiver.class);
                     intent.setAction(ntag);
 
                     PendingIntent pi = PendingIntent.
@@ -169,16 +167,16 @@ public class ScheduledNotificationManager {
         editor.commit();
 
         if (notification != null) {
-            LOG.e(NotificationPlugin.TAG, "returning Notification "+ notification.toString());
+            LOG.v(NotificationPlugin.TAG, "returning Notification "+ notification.toString());
         } else {
-            LOG.e(NotificationPlugin.TAG, "could not find Notification "+ tag);
+            LOG.v(NotificationPlugin.TAG, "could not find Notification "+ tag);
         }
 
         return notification;
     }
 
     public void showNotification(ScheduledNotification scheduledNotification) {
-        LOG.e(NotificationPlugin.TAG, "showNotification: "+ scheduledNotification.toString());
+        LOG.v(NotificationPlugin.TAG, "showNotification: "+ scheduledNotification.toString());
 
         NotificationManager nManager = (NotificationManager) context
             .getSystemService(Context.NOTIFICATION_SERVICE);
@@ -199,36 +197,44 @@ public class ScheduledNotificationManager {
         // }
 
         if (scheduledNotification.badge != null) {
-            LOG.e(NotificationPlugin.TAG, "showNotification: has a badge!");
+            LOG.v(NotificationPlugin.TAG, "showNotification: has a badge!");
             builder.setSmallIcon(getResIdForDrawable(scheduledNotification.badge));
         } else {
-            LOG.e(NotificationPlugin.TAG, "showNotification: has no badge, use app icon!");
+            LOG.v(NotificationPlugin.TAG, "showNotification: has no badge, use app icon!");
             try {
                 PackageManager pm = context.getPackageManager();
                 ApplicationInfo applicationInfo = pm.getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
                 Resources resources = pm.getResourcesForApplication(applicationInfo);
                 builder.setSmallIcon(applicationInfo.icon);
             } catch(NameNotFoundException e) {
-                LOG.e(NotificationPlugin.TAG, "Failed to set icon for notification!");
+                LOG.v(NotificationPlugin.TAG, "Failed to set icon for notification!");
                 return;
             }
         }
 
         if (scheduledNotification.icon != null) {
-            LOG.e(NotificationPlugin.TAG, "showNotification: has an icon!");
+            LOG.v(NotificationPlugin.TAG, "showNotification: has an icon!");
             builder.setLargeIcon(getIconFromUri(scheduledNotification.icon));
         }
 
 
+
+        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        launchIntent.setAction("notification");
+
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(contentIntent);
+
         Notification notification = builder.build();
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        LOG.e(NotificationPlugin.TAG, "notify!");
+        LOG.v(NotificationPlugin.TAG, "notify!");
         notificationManager.notify(scheduledNotification.tag.hashCode(), notification);
     }
 
     private void saveNotification(ScheduledNotification notification) {
-        LOG.e(NotificationPlugin.TAG, "saveNotification"+notification.toString());
+        LOG.v(NotificationPlugin.TAG, "saveNotification"+notification.toString());
         SharedPreferences prefs = getPrefs();
         SharedPreferences.Editor editor = prefs.edit();
 

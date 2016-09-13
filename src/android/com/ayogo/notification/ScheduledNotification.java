@@ -37,7 +37,7 @@ public class ScheduledNotification {
             options.put("title", this.title);
         } catch(JSONException e) {}
 
-        this.tag       = options.optString("tag", "ScheduledNotification");
+        this.tag       = options.optString("tag", null);
         this.body      = options.optString("body", null);
         this.at        = options.optLong("at", 0);
         this.icon      = options.optString("icon", null);

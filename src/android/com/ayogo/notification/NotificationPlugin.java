@@ -23,7 +23,7 @@ public class NotificationPlugin extends CordovaPlugin
 
     @Override
     protected void pluginInitialize() {
-        LOG.e(TAG, "Initializing");
+        LOG.v(TAG, "Initializing");
 
         this.mgr = new ScheduledNotificationManager(cordova.getActivity().getApplicationContext());
     }
@@ -47,9 +47,32 @@ public class NotificationPlugin extends CordovaPlugin
                         String title = args.getString(0);
                         JSONObject options = args.getJSONObject(1);
 
-                        LOG.e(TAG, "Schedule Notification: " + title);
+                        if(options.optString("tag", null) == null) {
+                            options.put("tag", callback.getCallbackId());
+                        }
+
+                        LOG.v(TAG, "Schedule Notification: " + title);
 
                         mgr.scheduleNotification(title, options);
+
+                        callback.sendPluginResult(new PluginResult(PluginResult.Status.OK));
+                    } catch (JSONException ex) {
+                        callback.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "Missing or invalid title or options"));
+                    }
+                }
+            });
+            return true;
+        }
+
+        if (action.equals("closeNotification")) {
+            cordova.getThreadPool().execute(new Runnable() {
+                public void run() {
+                    try {
+                        String tag = args.getString(0);
+
+                        LOG.v(TAG, "cancel Notification: " + tag);
+
+                        mgr.cancelNotification(tag);
 
                         callback.sendPluginResult(new PluginResult(PluginResult.Status.OK));
                     } catch (JSONException ex) {
@@ -64,7 +87,7 @@ public class NotificationPlugin extends CordovaPlugin
         if (action.equals("getNotifications")) {
             cordova.getThreadPool().execute(new Runnable() {
                 public void run() {
-                    LOG.e(TAG, "Get Notifications");
+                    LOG.v(TAG, "Get Notifications");
 
                     JSONArray notifications = mgr.getNotifications();
 
@@ -75,7 +98,7 @@ public class NotificationPlugin extends CordovaPlugin
             return true;
         }
 
-        LOG.e(TAG, "Tried to call " + action + " with " + args.toString());
+        LOG.i(TAG, "Tried to call " + action + " with " + args.toString());
 
         callback.sendPluginResult(new PluginResult(PluginResult.Status.INVALID_ACTION));
         return false;

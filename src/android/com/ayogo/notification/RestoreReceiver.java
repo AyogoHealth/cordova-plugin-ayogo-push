@@ -12,7 +12,7 @@ abstract public class RestoreReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive (Context context, Intent intent) {
-        LOG.e(NotificationPlugin.TAG, "Restore Reciever Triggered!");
+        LOG.v(NotificationPlugin.TAG, "Restore Reciever Triggered!");
         ScheduledNotificationManager mgr   = new ScheduledNotificationManager(context);
         mgr.rescheduleNotifications();
     }
