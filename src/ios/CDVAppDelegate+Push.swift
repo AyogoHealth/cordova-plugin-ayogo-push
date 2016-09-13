@@ -1,5 +1,9 @@
 /*! Copyright 2016 Ayogo Health Inc. */
 
+#if swift(>=2.3)
+import UserNotifications;
+#endif
+
 // NSUserDefaults key names
 let CDV_PushPreference      = "CordovaPushPreference";
 let CDV_PushRegistration    = "CordovaPushRegistration";
@@ -14,6 +18,7 @@ let CordovaDidFailToRegisterForRemoteNotificationsWithError = "CordovaDidFailToR
 private var _CDV_didRegisterUserNotificationSettings        = false;
 private var _CDV_didRegisterForRemoteNotifications          = false;
 private var _CDV_didFailToRegisterForRemoteNotifications    = false;
+private var _CDV_willFinishLaunchingWithOptions             = false;
 
 
 
@@ -56,6 +61,10 @@ extension CDVAppDelegate {
             _CDV_didFailToRegisterForRemoteNotifications = _swizzleMethod(self,
                 original: #selector(UIApplicationDelegate.application(_:didFailToRegisterForRemoteNotificationsWithError:)),
                 replacement: #selector(CDVAppDelegate.CordovaApplication(_:didFailToRegisterForRemoteNotificationsWithError:)));
+
+            _CDV_willFinishLaunchingWithOptions = _swizzleMethod(self,
+                original: #selector(UIApplicationDelegate.application(_:willFinishLaunchingWithOptions:)),
+                replacement: #selector(CDVAppDelegate.CordovaApplication(_:willFinishLaunchingWithOptions:)));
         }
     }
 
@@ -92,4 +101,27 @@ extension CDVAppDelegate {
             return self.CordovaApplication(application, didFailToRegisterForRemoteNotificationsWithError:error);
         }
     }
+
+
+    func CordovaApplication(application : UIApplication, willFinishLaunchingWithOptions launchOptions: NSDictionary) {
+        #if swift(>=2.3)
+        if #available(iOS 10.0, *) {
+            UNUserNotificationCenter.currentNotificationCenter().delegate = self;
+        }
+        #endif
+
+        if _CDV_willFinishLaunchingWithOptions {
+            return self.CordovaApplication(application, willFinishLaunchingWithOptions:launchOptions);
+        }
+    }
 }
+
+#if swift(>=2.3)
+@available(iOS 10.0, *)
+extension CDVAppDelegate : UNUserNotificationCenterDelegate {
+    public func userNotificationCenter(center: UNUserNotificationCenter, willPresentNotification notification: UNNotification, withCompletionHandler completionHandler: (UNNotificationPresentationOptions) -> Void) {
+        // Show the notification while in the foreground
+        completionHandler([.Alert, .Sound]);
+    }
+}
+#endif

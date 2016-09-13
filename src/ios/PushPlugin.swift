@@ -240,7 +240,7 @@ class PushPlugin : CDVPlugin {
                 content.userInfo = data;
             }
 
-            var trigger = UNTimeIntervalNotificationTrigger.init(timeInterval: 1, repeats: false);
+            var trigger : UNNotificationTrigger? = nil;
 
             if let at = options?.objectForKey("at")?.doubleValue {
                 let scheduleDate = NSDate(timeIntervalSince1970: at/1000.0);
@@ -294,9 +294,93 @@ class PushPlugin : CDVPlugin {
 
 
     func closeNotification(command : CDVInvokedUrlCommand) {
+        guard let id = command.argumentAtIndex(0) as? String else {
+            self.commandDelegate.sendPluginResult(CDVPluginResult(status: CDVCommandStatus_ERROR), callbackId: command.callbackId);
+            return;
+        }
+
+        #if swift(>=2.3)
+        if #available(iOS 10.0, *) {
+            UNUserNotificationCenter.currentNotificationCenter().removePendingNotificationRequestsWithIdentifiers([id]);
+            UNUserNotificationCenter.currentNotificationCenter().removeDeliveredNotificationsWithIdentifiers([id]);
+
+            self.commandDelegate.sendPluginResult(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
+            return;
+        }
+        #endif
+
+        _ = UIApplication.sharedApplication().scheduledLocalNotifications?
+            .filter({ $0.userInfo?["__CDV_id__"] as? String == id })
+            .map({ UIApplication.sharedApplication().cancelLocalNotification($0) });
+
+        self.commandDelegate.sendPluginResult(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
     }
 
+
     func getNotifications(command : CDVInvokedUrlCommand) {
+        #if swift(>=2.3)
+        if #available(iOS 10.0, *) {
+            UNUserNotificationCenter.currentNotificationCenter().getPendingNotificationRequestsWithCompletionHandler() { (requests) in
+                let notifications : [[NSObject : AnyObject]]? = requests.map() { (req) in
+                    var ret = [NSObject : AnyObject]();
+
+                    ret["tag"] = req.identifier;
+                    ret["title"] = req.content.title;
+                    ret["body"] = req.content.body;
+                    ret["userInfo"] = req.content.userInfo;
+
+                    let formatter = NSDateFormatter()
+                    formatter.calendar = NSCalendar(calendarIdentifier: NSCalendarIdentifierISO8601)
+                    formatter.locale = NSLocale(localeIdentifier: "en_US_POSIX")
+                    formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
+                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+
+                    if let trigger = req.trigger as? UNTimeIntervalNotificationTrigger where trigger.nextTriggerDate() != nil {
+                      ret["at"] = formatter.stringFromDate(trigger.nextTriggerDate()!);
+                    }
+
+                    if let trigger = req.trigger as? UNCalendarNotificationTrigger where trigger.nextTriggerDate() != nil {
+                      ret["at"] = formatter.stringFromDate(trigger.nextTriggerDate()!);
+                    }
+
+                    return ret;
+                };
+
+                self.commandDelegate.sendPluginResult(CDVPluginResult(status: CDVCommandStatus_OK, messageAsArray:notifications), callbackId: command.callbackId);
+            };
+
+            return;
+        }
+        #endif
+
+        let notifications : [[NSObject : AnyObject]]? = UIApplication.sharedApplication().scheduledLocalNotifications?
+            .map({ (notification) in
+                var ret = [NSObject : AnyObject]();
+
+                if #available(iOS 8.2, *) {
+                    ret["title"] = notification.alertTitle;
+                    ret["body"] = notification.alertBody;
+                } else {
+                    ret["title"] = notification.alertBody;
+                }
+
+                ret["tag"] = notification.userInfo?["__CDV_id__"];
+                ret["data"] = notification.userInfo;
+
+                if let at = notification.fireDate {
+                    let formatter = NSDateFormatter()
+                    formatter.calendar = NSCalendar(calendarIdentifier: NSCalendarIdentifierISO8601)
+                    formatter.locale = NSLocale(localeIdentifier: "en_US_POSIX")
+                    formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
+                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+
+                    ret["at"] = formatter.stringFromDate(at)
+                }
+
+                return ret;
+             });
+
+        self.commandDelegate.sendPluginResult(CDVPluginResult(status: CDVCommandStatus_OK, messageAsArray:notifications), callbackId: command.callbackId);
     }
 
 
