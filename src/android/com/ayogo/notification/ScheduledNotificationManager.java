@@ -208,7 +208,7 @@ public class ScheduledNotificationManager {
                 Resources resources = pm.getResourcesForApplication(applicationInfo);
                 builder.setSmallIcon(applicationInfo.icon);
             } catch(NameNotFoundException e) {
-                LOG.v(NotificationPlugin.TAG, "Failed to set icon for notification!");
+                LOG.v(NotificationPlugin.TAG, "Failed to set badge for notification!");
                 return;
             }
         }
@@ -216,6 +216,18 @@ public class ScheduledNotificationManager {
         if (scheduledNotification.icon != null) {
             LOG.v(NotificationPlugin.TAG, "showNotification: has an icon!");
             builder.setLargeIcon(getIconFromUri(scheduledNotification.icon));
+        } else {
+            LOG.v(NotificationPlugin.TAG, "showNotification: has no icon, use app icon!");
+            try {
+                PackageManager pm = context.getPackageManager();
+                ApplicationInfo applicationInfo = pm.getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+                Resources resources = pm.getResourcesForApplication(applicationInfo);
+                Bitmap appIconBitmap = BitmapFactory.decodeResource(resources, applicationInfo.icon);
+                builder.setLargeIcon(applicationInfo.icon);
+            } catch(NameNotFoundException e) {
+                LOG.v(NotificationPlugin.TAG, "Failed to set icon for notification!");
+                return;
+            }
         }
 
 
