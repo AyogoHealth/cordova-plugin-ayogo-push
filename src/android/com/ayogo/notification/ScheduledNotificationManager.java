@@ -186,8 +186,6 @@ public class ScheduledNotificationManager {
         // Build the notification options
         builder
             .setDefaults(Notification.DEFAULT_ALL)
-            .setContentTitle(scheduledNotification.title)
-            .setContentText(scheduledNotification.body)
             .setTicker(scheduledNotification.body)
             .setPriority(Notification.PRIORITY_HIGH)
             .setAutoCancel(true);
@@ -196,6 +194,25 @@ public class ScheduledNotificationManager {
         // if (scheduledNotification.sound != null) {
         //     builder.setSound(sound);
         // }
+
+        if (scheduledNotification.body != null) {
+            builder.setContentTitle(scheduledNotification.title);
+            builder.setContentText(scheduledNotification.body);
+        } else {
+            //Default the title to the app name
+            try {
+                PackageManager pm = context.getPackageManager();
+                ApplicationInfo applicationInfo = pm.getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+
+                String appName = applicationInfo.loadLabel(pm).toString();
+
+                builder.setContentTitle(appName);
+                builder.setContentText(scheduledNotification.title);
+            } catch(NameNotFoundException e) {
+                LOG.v(NotificationPlugin.TAG, "Failed to set title for notification!");
+                return;
+            }
+        }
 
         if (scheduledNotification.badge != null) {
             LOG.v(NotificationPlugin.TAG, "showNotification: has a badge!");
@@ -223,7 +240,7 @@ public class ScheduledNotificationManager {
                 ApplicationInfo applicationInfo = pm.getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
                 Resources resources = pm.getResourcesForApplication(applicationInfo);
                 Bitmap appIconBitmap = BitmapFactory.decodeResource(resources, applicationInfo.icon);
-                builder.setLargeIcon(applicationInfo.icon);
+                builder.setLargeIcon(appIconBitmap);
             } catch(NameNotFoundException e) {
                 LOG.v(NotificationPlugin.TAG, "Failed to set icon for notification!");
                 return;
