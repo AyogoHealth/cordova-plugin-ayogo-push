@@ -29,7 +29,7 @@
                 <param name="onload" value="true" />
             </feature>
 
-            <feature name="Notification">
+            <feature name="LocalNotification">
                 <param name="ios-package" value="CDVPushPlugin" />
             </feature>
         </config-file>
@@ -43,7 +43,7 @@
             <feature name="Push">
                 <param name="android-package" value="com.ayogo.push.PushPlugin" />
             </feature>
-            <feature name="Notification">
+            <feature name="LocalNotification">
                 <param name="android-package" value="com.ayogo.notification.NotificationPlugin"/>
             </feature>
         </config-file>
