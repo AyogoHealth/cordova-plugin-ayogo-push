@@ -228,12 +228,13 @@ class PushPlugin : CDVPlugin {
         #if swift(>=2.3)
         if #available(iOS 10.0, *) {
             let content = UNMutableNotificationContent();
-
-            content.title = title;
             //content.sound = UNNotificationSound.`default`();
 
             if let body = options?.objectForKey("body") as? String {
                 content.body = body;
+                content.title = title;
+            } else {
+                content.body = title;
             }
 
             if let data = options?.objectForKey("data") as? [NSObject : AnyObject] {
@@ -267,10 +268,11 @@ class PushPlugin : CDVPlugin {
         notification.soundName = UILocalNotificationDefaultSoundName;
 
         if #available(iOS 8.2, *) {
-            notification.alertTitle = title;
-
             if let body = options?.objectForKey("body") as? String {
                 notification.alertBody = body;
+                notification.alertTitle = title;
+            } else {
+                notification.alertBody = title;
             }
         } else {
             notification.alertBody = title;
