@@ -51,20 +51,26 @@ public class ScheduledNotificationManager {
 
         ScheduledNotification notification = new ScheduledNotification(title, options);
 
-        saveNotification(notification);
-
-        LOG.v(NotificationPlugin.TAG, "create Intent: "+notification.tag);
-
-        Intent intent = new Intent(context, TriggerReceiver.class);
-        intent.setAction(notification.tag);
-
-        PendingIntent pi = PendingIntent.getBroadcast(context, INTENT_REQUEST_CODE, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-
         long alarmTime = notification.at;
 
-        LOG.v(NotificationPlugin.TAG, "schedule alarm for: "+alarmTime);
+        if (alarmTime != 0) { //0 = uninitialized.
 
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pi);
+            saveNotification(notification);
+
+            LOG.v(NotificationPlugin.TAG, "create Intent: "+notification.tag);
+
+            Intent intent = new Intent(context, TriggerReceiver.class);
+            intent.setAction(notification.tag);
+
+            PendingIntent pi = PendingIntent.getBroadcast(context, INTENT_REQUEST_CODE, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+            LOG.v(NotificationPlugin.TAG, "schedule alarm for: "+alarmTime);
+
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pi);
+        } else {
+            // No "at", trigger the notification right now.
+            showNotification(notification);
+        }
 
         return notification;
     }
