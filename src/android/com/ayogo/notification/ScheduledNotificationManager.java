@@ -51,20 +51,26 @@ public class ScheduledNotificationManager {
 
         ScheduledNotification notification = new ScheduledNotification(title, options);
 
-        saveNotification(notification);
-
-        LOG.v(NotificationPlugin.TAG, "create Intent: "+notification.tag);
-
-        Intent intent = new Intent(context, TriggerReceiver.class);
-        intent.setAction(notification.tag);
-
-        PendingIntent pi = PendingIntent.getBroadcast(context, INTENT_REQUEST_CODE, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-
         long alarmTime = notification.at;
 
-        LOG.v(NotificationPlugin.TAG, "schedule alarm for: "+alarmTime);
+        if (alarmTime != 0) { //0 = uninitialized.
 
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pi);
+            saveNotification(notification);
+
+            LOG.v(NotificationPlugin.TAG, "create Intent: "+notification.tag);
+
+            Intent intent = new Intent(context, TriggerReceiver.class);
+            intent.setAction(notification.tag);
+
+            PendingIntent pi = PendingIntent.getBroadcast(context, INTENT_REQUEST_CODE, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+            LOG.v(NotificationPlugin.TAG, "schedule alarm for: "+alarmTime);
+
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pi);
+        } else {
+            // No "at", trigger the notification right now.
+            showNotification(notification);
+        }
 
         return notification;
     }
@@ -186,8 +192,6 @@ public class ScheduledNotificationManager {
         // Build the notification options
         builder
             .setDefaults(Notification.DEFAULT_ALL)
-            .setContentTitle(scheduledNotification.title)
-            .setContentText(scheduledNotification.body)
             .setTicker(scheduledNotification.body)
             .setPriority(Notification.PRIORITY_HIGH)
             .setAutoCancel(true);
@@ -196,6 +200,25 @@ public class ScheduledNotificationManager {
         // if (scheduledNotification.sound != null) {
         //     builder.setSound(sound);
         // }
+
+        if (scheduledNotification.body != null) {
+            builder.setContentTitle(scheduledNotification.title);
+            builder.setContentText(scheduledNotification.body);
+        } else {
+            //Default the title to the app name
+            try {
+                PackageManager pm = context.getPackageManager();
+                ApplicationInfo applicationInfo = pm.getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+
+                String appName = applicationInfo.loadLabel(pm).toString();
+
+                builder.setContentTitle(appName);
+                builder.setContentText(scheduledNotification.title);
+            } catch(NameNotFoundException e) {
+                LOG.v(NotificationPlugin.TAG, "Failed to set title for notification!");
+                return;
+            }
+        }
 
         if (scheduledNotification.badge != null) {
             LOG.v(NotificationPlugin.TAG, "showNotification: has a badge!");
@@ -208,7 +231,7 @@ public class ScheduledNotificationManager {
                 Resources resources = pm.getResourcesForApplication(applicationInfo);
                 builder.setSmallIcon(applicationInfo.icon);
             } catch(NameNotFoundException e) {
-                LOG.v(NotificationPlugin.TAG, "Failed to set icon for notification!");
+                LOG.v(NotificationPlugin.TAG, "Failed to set badge for notification!");
                 return;
             }
         }
@@ -216,6 +239,18 @@ public class ScheduledNotificationManager {
         if (scheduledNotification.icon != null) {
             LOG.v(NotificationPlugin.TAG, "showNotification: has an icon!");
             builder.setLargeIcon(getIconFromUri(scheduledNotification.icon));
+        } else {
+            LOG.v(NotificationPlugin.TAG, "showNotification: has no icon, use app icon!");
+            try {
+                PackageManager pm = context.getPackageManager();
+                ApplicationInfo applicationInfo = pm.getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+                Resources resources = pm.getResourcesForApplication(applicationInfo);
+                Bitmap appIconBitmap = BitmapFactory.decodeResource(resources, applicationInfo.icon);
+                builder.setLargeIcon(appIconBitmap);
+            } catch(NameNotFoundException e) {
+                LOG.v(NotificationPlugin.TAG, "Failed to set icon for notification!");
+                return;
+            }
         }
 
 

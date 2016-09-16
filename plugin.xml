@@ -28,6 +28,18 @@
                 <param name="ios-package" value="CDVPushPlugin" />
                 <param name="onload" value="true" />
             </feature>
+
+            <feature name="LocalNotification">
+                <param name="ios-package" value="CDVPushPlugin" />
+            </feature>
+        </config-file>
+
+        <config-file parent="aps-environment" target="*/Entitlements-Debug.plist">
+          <string>development</string>
+        </config-file>
+
+        <config-file parent="aps-environment" target="*/Entitlements-Release.plist">
+          <string>production</string>
         </config-file>
 
         <source-file src="src/ios/PushPlugin.swift" />
@@ -39,7 +51,7 @@
             <feature name="Push">
                 <param name="android-package" value="com.ayogo.push.PushPlugin" />
             </feature>
-            <feature name="Notification">
+            <feature name="LocalNotification">
                 <param name="android-package" value="com.ayogo.notification.NotificationPlugin"/>
             </feature>
         </config-file>

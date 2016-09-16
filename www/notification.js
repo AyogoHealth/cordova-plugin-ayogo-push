@@ -30,24 +30,24 @@ function Notification(title, options) {
 var noop = function() { };
 
 Notification.prototype.close = function() {
-  exec(noop, noop, 'Notification', 'closeNotification', [this.tag]);
+  exec(noop, noop, 'LocalNotification', 'closeNotification', [this.tag]);
 };
 
 function NotificationManager() { }
 
 NotificationManager.prototype.requestPermission = function(cb) {
   if (cb) {
-      exec(cb, noop, 'Notification', 'requestPermission', []);
+      exec(cb, noop, 'LocalNotification', 'requestPermission', []);
   } else {
     return new Promise(function(res, rej) {
-      exec(res, rej, 'Notification', 'requestPermission', []);
+      exec(res, rej, 'LocalNotification', 'requestPermission', []);
     });
   }
 };
 
 NotificationManager.prototype.showNotification = function(title, options) {
   return new Promise(function(res, rej) {
-    exec(res, rej, 'Notification', 'showNotification', [title, options]);
+    exec(res, rej, 'LocalNotification', 'showNotification', [title, options]);
   });
 };
 
@@ -57,7 +57,7 @@ NotificationManager.prototype.getNotifications = function() {
       res(notes.map(function(options) { return new Notification(options.title, options); }));
     }
 
-    exec(onsuccess, rej, 'Notification', 'getNotifications', []);
+    exec(onsuccess, rej, 'LocalNotification', 'getNotifications', []);
   });
 };
 
