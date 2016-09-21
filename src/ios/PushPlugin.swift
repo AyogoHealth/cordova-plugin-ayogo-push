@@ -319,6 +319,23 @@ class PushPlugin : CDVPlugin {
     }
 
 
+    func cancelAllNotifications(command : CDVInvokedUrlCommand) {
+        #if swift(>=2.3)
+        if #available(iOS 10.0, *) {
+            UNUserNotificationCenter.currentNotificationCenter().removeAllPendingNotificationRequests();
+
+            self.commandDelegate.sendPluginResult(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
+            return;
+        }
+        #endif
+
+        UIApplication.sharedApplication().cancelAllLocalNotifications();
+
+        self.commandDelegate.sendPluginResult(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
+        return;
+    }
+
+
     func getNotifications(command : CDVInvokedUrlCommand) {
         #if swift(>=2.3)
         if #available(iOS 10.0, *) {
