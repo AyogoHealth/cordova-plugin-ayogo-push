@@ -18,6 +18,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat.BigTextStyle;
 import android.support.v4.app.TaskStackBuilder;
 
 import org.json.JSONException;
@@ -204,6 +205,7 @@ public class ScheduledNotificationManager {
         if (scheduledNotification.body != null) {
             builder.setContentTitle(scheduledNotification.title);
             builder.setContentText(scheduledNotification.body);
+            builder.setStyle(new NotificationCompat.BigTextStyle().bigText(scheduledNotification.body));
         } else {
             //Default the title to the app name
             try {
@@ -214,6 +216,7 @@ public class ScheduledNotificationManager {
 
                 builder.setContentTitle(appName);
                 builder.setContentText(scheduledNotification.title);
+                builder.setStyle(new NotificationCompat.BigTextStyle().bigText(scheduledNotification.title));
             } catch(NameNotFoundException e) {
                 LOG.v(NotificationPlugin.TAG, "Failed to set title for notification!");
                 return;
