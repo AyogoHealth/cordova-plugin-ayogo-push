@@ -16,6 +16,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationCompat.BigTextStyle;
@@ -67,7 +68,11 @@ public class ScheduledNotificationManager {
 
             LOG.v(NotificationPlugin.TAG, "schedule alarm for: "+alarmTime);
 
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pi);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pi);
+            } else {
+                alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pi);
+            }
         } else {
             // No "at", trigger the notification right now.
             showNotification(notification);
