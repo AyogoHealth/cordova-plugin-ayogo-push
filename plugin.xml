@@ -44,6 +44,7 @@
 
         <source-file src="src/ios/PushPlugin.swift" />
         <source-file src="src/ios/CDVAppDelegate+Push.swift" />
+        <source-file src="src/ios/CDVAppDelegate+Push.m" />
     </platform>
 
     <platform name="android">

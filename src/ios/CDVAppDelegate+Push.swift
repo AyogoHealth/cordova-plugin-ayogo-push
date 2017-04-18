@@ -39,7 +39,7 @@ func _swizzleMethod(klass : AnyClass, original : Selector, replacement : Selecto
 
 extension CDVAppDelegate {
 
-    open override static func initialize() {
+    open static func loadPush() {
 
         if self !== CDVAppDelegate.self {
             return;
