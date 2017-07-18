@@ -332,9 +332,9 @@ class PushPlugin : CDVPlugin {
                     ret["userInfo"] = req.content.userInfo;
 
                     let formatter = DateFormatter()
-                    formatter.calendar = NSCalendar(calendarIdentifier: NSCalendar.Identifier.ISO8601) as! Calendar
-                    formatter.locale = NSLocale(localeIdentifier: "en_US_POSIX") as Locale!
-                    formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0) as TimeZone!
+                    formatter.calendar = Calendar(identifier: .iso8601)
+                    formatter.locale = Locale(identifier: "en_US_POSIX")
+                    formatter.timeZone = TimeZone(secondsFromGMT: 0)
                     formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
 
                     if let trigger = req.trigger as? UNTimeIntervalNotificationTrigger, trigger.nextTriggerDate() != nil {
@@ -371,9 +371,9 @@ class PushPlugin : CDVPlugin {
 
                 if let at = notification.fireDate {
                     let formatter = DateFormatter()
-                    formatter.calendar = NSCalendar(calendarIdentifier: NSCalendar.Identifier.ISO8601) as! Calendar
-                    formatter.locale = NSLocale(localeIdentifier: "en_US_POSIX") as Locale!
-                    formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0) as TimeZone!
+                    formatter.calendar = Calendar(identifier: .iso8601)
+                    formatter.locale = Locale(identifier: "en_US_POSIX")
+                    formatter.timeZone = TimeZone(secondsFromGMT: 0)
                     formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
 
                     ret["at"] = formatter.string(from: at)
