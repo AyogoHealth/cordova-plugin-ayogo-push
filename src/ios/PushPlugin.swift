@@ -48,7 +48,7 @@ class PushPlugin : CDVPlugin {
 
     /* Notification Permission ***********************************************/
 
-    func hasPermission(command : CDVInvokedUrlCommand) {
+    func hasPermission(_ command : CDVInvokedUrlCommand) {
         var permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
 
         if permission == nil {
@@ -111,7 +111,7 @@ class PushPlugin : CDVPlugin {
 
     /* Push Notification Registrations ***************************************/
 
-    func registerPush(command : CDVInvokedUrlCommand) {
+    func registerPush(_ command : CDVInvokedUrlCommand) {
         self.registrationCallback = command.callbackId;
 
         let permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
@@ -128,7 +128,7 @@ class PushPlugin : CDVPlugin {
     }
 
 
-    func unregisterPush(command : CDVInvokedUrlCommand) {
+    func unregisterPush(_ command : CDVInvokedUrlCommand) {
         UIApplication.shared.unregisterForRemoteNotifications();
 
         let registration = UserDefaults.standard.object(forKey: CDV_PushRegistration);
@@ -146,7 +146,7 @@ class PushPlugin : CDVPlugin {
     }
 
 
-    func getPushRegistration(command : CDVInvokedUrlCommand) {
+    func getPushRegistration(_ command : CDVInvokedUrlCommand) {
         // Fail immediately if notifications aren't registered
         if !UIApplication.shared.isRegisteredForRemoteNotifications {
             let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
@@ -193,7 +193,7 @@ class PushPlugin : CDVPlugin {
 
     /* Local Notification Scheduling *****************************************/
 
-    func requestPermission(command : CDVInvokedUrlCommand) {
+    func requestPermission(_ command : CDVInvokedUrlCommand) {
         let permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
 
         if permission == nil {
@@ -206,7 +206,7 @@ class PushPlugin : CDVPlugin {
     }
 
 
-    func showNotification(command : CDVInvokedUrlCommand) {
+    func showNotification(_ command : CDVInvokedUrlCommand) {
         guard let title = command.argument(at: 0) as? String else {
             self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_ERROR), callbackId: command.callbackId);
             return;
@@ -295,7 +295,7 @@ class PushPlugin : CDVPlugin {
     }
 
 
-    func closeNotification(command : CDVInvokedUrlCommand) {
+    func closeNotification(_ command : CDVInvokedUrlCommand) {
         guard let id = command.argument(at: 0) as? String else {
             self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_ERROR), callbackId: command.callbackId);
             return;
@@ -319,7 +319,7 @@ class PushPlugin : CDVPlugin {
     }
 
 
-    func getNotifications(command : CDVInvokedUrlCommand) {
+    func getNotifications(_ command : CDVInvokedUrlCommand) {
         #if swift(>=2.3)
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().getPendingNotificationRequests() { (requests) in
