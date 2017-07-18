@@ -12,22 +12,22 @@ class PushPlugin : CDVPlugin {
 
     override func pluginInitialize() {
         NotificationCenter.default.addObserver(self,
-                selector: #selector(PushPlugin._didRegisterUserNotificationSettings),
+                selector: #selector(PushPlugin._didRegisterUserNotificationSettings(_:)),
                 name: NSNotification.Name(rawValue: CordovaDidRegisterUserNotificationSettings),
                 object: nil);
 
         NotificationCenter.default.addObserver(self,
-                selector: #selector(PushPlugin._didRegisterForRemoteNotifications),
+                selector: #selector(PushPlugin._didRegisterForRemoteNotifications(_:)),
                 name: NSNotification.Name(rawValue: CordovaDidRegisterForRemoteNotificationsWithDeviceToken),
                 object: nil);
 
         NotificationCenter.default.addObserver(self,
-                selector: #selector(PushPlugin._didFailToRegisterForRemoteNotifications),
+                selector: #selector(PushPlugin._didFailToRegisterForRemoteNotifications(_:)),
                 name: NSNotification.Name(rawValue: CordovaDidFailToRegisterForRemoteNotificationsWithError),
                 object: nil);
 
         NotificationCenter.default.addObserver(self,
-                selector: #selector(PushPlugin._didFinishLaunchingWithOptions),
+                selector: #selector(PushPlugin._didFinishLaunchingWithOptions(_:)),
                 name: NSNotification.Name.UIApplicationDidFinishLaunching,
                 object: nil);
 
@@ -93,7 +93,7 @@ class PushPlugin : CDVPlugin {
     }
 
 
-    internal func _didRegisterUserNotificationSettings(notification : NSNotification) {
+    internal func _didRegisterUserNotificationSettings(_ notification : NSNotification) {
         let settings = notification.object as! UIUserNotificationSettings;
         let permission = (settings.types == []) ? "denied" : "granted";
 
@@ -166,7 +166,7 @@ class PushPlugin : CDVPlugin {
     }
 
 
-    internal func _didRegisterForRemoteNotifications(notification : NSNotification) {
+    internal func _didRegisterForRemoteNotifications(_ notification : NSNotification) {
         let token = notification.object as! String;
 
         NSLog("REGISTERED WITH DEVICE TOKEN: \(token)");
@@ -182,7 +182,7 @@ class PushPlugin : CDVPlugin {
     }
 
 
-    internal func _didFailToRegisterForRemoteNotifications(notification : NSNotification) {
+    internal func _didFailToRegisterForRemoteNotifications(_ notification : NSNotification) {
         let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
         self.commandDelegate.send(result, callbackId: self.registrationCallback);
 
@@ -391,7 +391,7 @@ class PushPlugin : CDVPlugin {
 
     /* Notification Launch URL handling **************************************/
 
-    internal func _didFinishLaunchingWithOptions(notification : NSNotification) {
+    internal func _didFinishLaunchingWithOptions(_ notification : NSNotification) {
         UIApplication.shared.applicationIconBadgeNumber = 0;
 
         let options = notification.userInfo;
