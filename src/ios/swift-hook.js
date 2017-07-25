@@ -11,7 +11,7 @@ module.exports = function(context) {
 
         var xcconfig = fs.readFileSync(filepath, encoding);
 
-        const content = '\nEMBEDDED_CONTENT_CONTAINS_SWIFT = YES\nLD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks"\nSWIFT_VERSION=2.3\nALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=NO';
+        const content = '\nEMBEDDED_CONTENT_CONTAINS_SWIFT = YES\nSWIFT_VERSION=3.0\nALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=NO';
 
         xcconfig += content;
         fs.writeFileSync(filepath, xcconfig, encoding);
