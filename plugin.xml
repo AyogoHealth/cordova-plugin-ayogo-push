@@ -20,7 +20,7 @@
         <clobbers target="window.notificationManager" />
     </js-module>
 
-    <hook type="after_prepare" src="src/ios/swift-hook.js" />
+    <hook type="before_compile" src="src/ios/swift-hook.js" />
 
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
