@@ -3,7 +3,7 @@
 const fs = require('fs');
 
 module.exports = function(context) {
-    if (context.opts.cordova.platforms.indexOf('ios') >= 0) {
+    if (context.opts.platforms.indexOf('ios') >= 0) {
         console.warn('UPDATING the Xcode Project files');
 
         const encoding = 'utf-8';
