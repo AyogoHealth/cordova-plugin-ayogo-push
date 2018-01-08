@@ -395,7 +395,7 @@ class PushPlugin : CDVPlugin {
         
         #if swift(>=2.3)
         if #available(iOS 10.0, *) {
-            UNUserNotificationCenter.current().delegate = self;
+            UNUserNotificationCenter.current().delegate = self.appDelegate() as? UNUserNotificationCenterDelegate;
         }
         #endif
     }
