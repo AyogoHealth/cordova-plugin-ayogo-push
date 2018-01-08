@@ -25,12 +25,6 @@ class PushPlugin : CDVPlugin {
                 selector: #selector(PushPlugin._didFinishLaunchingWithOptions(_:)),
                 name: NSNotification.Name.UIApplicationDidFinishLaunching,
                 object: nil);
-        
-        NotificationCenter.default.addObserver(self,
-                selector: #selector(PushPlugin._didFinishLaunchingWithOptions(_:)),
-                name: NSNotification.Name.UIApplicationDidFinishLaunching,
-                object: nil);
-        
 
 
         // Re-register for notifications if we think we're registered
