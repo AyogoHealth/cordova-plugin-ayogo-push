@@ -38,35 +38,6 @@ func _swizzleMethod(klass : AnyClass, original : Selector, replacement : Selecto
 
 
 extension CDVAppDelegate {
-
-    open static func loadPush() {
-
-        if self !== CDVAppDelegate.self {
-            return;
-        }
-
-        struct Inner {
-            static let i: () = {
-                _CDV_didRegisterUserNotificationSettings = _swizzleMethod(klass: CDVAppDelegate.self,
-                                                                          original: #selector(UIApplicationDelegate.application(_:didRegister:)),
-                                                                          replacement: #selector(CDVAppDelegate.CordovaApplication(_:didRegister:)));
-            }()
-        }
-        let _ = Inner.i
-
-    }
-
-
-
-    @objc func CordovaApplication(_ application : UIApplication, didRegister notificationSettings : UIUserNotificationSettings) {
-        NotificationCenter.default.post(name: NSNotification.Name(rawValue: CordovaDidRegisterUserNotificationSettings), object: notificationSettings);
-
-        if _CDV_didRegisterUserNotificationSettings {
-            // Call the original implementation (if any)
-            return self.CordovaApplication(application, didRegister: notificationSettings);
-        }
-    }
-    
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let description  = deviceToken.description;
         let token = description.replacingOccurrences(of: "<", with:"").replacingOccurrences(of: ">", with: "").replacingOccurrences(of: " ", with :"");

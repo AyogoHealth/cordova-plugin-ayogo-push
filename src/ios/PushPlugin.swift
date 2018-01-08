@@ -12,11 +12,6 @@ class PushPlugin : CDVPlugin {
 
     override func pluginInitialize() {
         NotificationCenter.default.addObserver(self,
-                selector: #selector(PushPlugin._didRegisterUserNotificationSettings(_:)),
-                name: NSNotification.Name(rawValue: CordovaDidRegisterUserNotificationSettings),
-                object: nil);
-
-        NotificationCenter.default.addObserver(self,
                 selector: #selector(PushPlugin._didRegisterForRemoteNotifications(_:)),
                 name: NSNotification.Name(rawValue: CordovaDidRegisterForRemoteNotificationsWithDeviceToken),
                 object: nil);
@@ -97,22 +92,6 @@ class PushPlugin : CDVPlugin {
         // Note that this falls into the `else` block from above on iOS 10
         UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil));
     }
-
-
-    @objc internal func _didRegisterUserNotificationSettings(_ notification : NSNotification) {
-        let settings = notification.object as! UIUserNotificationSettings;
-        let permission = (settings.types == []) ? "denied" : "granted";
-
-        UserDefaults.standard.set(permission, forKey:CDV_PushPreference);
-
-        if let callback = self.permissionCallback {
-            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
-            self.commandDelegate.send(result, callbackId: callback);
-
-            self.permissionCallback = nil;
-        }
-    }
-
 
 
     /* Push Notification Registrations ***************************************/
