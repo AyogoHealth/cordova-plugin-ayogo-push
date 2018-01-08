@@ -30,6 +30,12 @@ class PushPlugin : CDVPlugin {
                 selector: #selector(PushPlugin._didFinishLaunchingWithOptions(_:)),
                 name: NSNotification.Name.UIApplicationDidFinishLaunching,
                 object: nil);
+        
+        NotificationCenter.default.addObserver(self,
+                selector: #selector(PushPlugin._didFinishLaunchingWithOptions(_:)),
+                name: NSNotification.Name.UIApplicationDidFinishLaunching,
+                object: nil);
+        
 
 
         // Re-register for notifications if we think we're registered
@@ -407,5 +413,11 @@ class PushPlugin : CDVPlugin {
                 NotificationCenter.default.post(name: NSNotification.Name.CDVPluginHandleOpenURL, object: data);
             }
         }
+        
+        #if swift(>=2.3)
+        if #available(iOS 10.0, *) {
+            UNUserNotificationCenter.current().delegate = self;
+        }
+        #endif
     }
 }

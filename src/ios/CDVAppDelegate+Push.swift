@@ -50,11 +50,6 @@ extension CDVAppDelegate {
                 _CDV_didRegisterUserNotificationSettings = _swizzleMethod(klass: CDVAppDelegate.self,
                                                                           original: #selector(UIApplicationDelegate.application(_:didRegister:)),
                                                                           replacement: #selector(CDVAppDelegate.CordovaApplication(_:didRegister:)));
-
-                _CDV_willFinishLaunchingWithOptions = _swizzleMethod(klass: CDVAppDelegate.self,
-                                                                     original: #selector(UIApplicationDelegate.application(_:willFinishLaunchingWithOptions:)),
-                                                                     replacement: #selector(CDVAppDelegate.CordovaApplication(_:willFinishLaunchingWithOptions:)));
-
             }()
         }
         let _ = Inner.i
@@ -82,19 +77,6 @@ extension CDVAppDelegate {
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: CordovaDidFailToRegisterForRemoteNotificationsWithError), object: error);
-    }
-
-
-    @objc func CordovaApplication(_ application : UIApplication, willFinishLaunchingWithOptions launchOptions: NSDictionary) {
-        #if swift(>=2.3)
-        if #available(iOS 10.0, *) {
-            UNUserNotificationCenter.current().delegate = self;
-        }
-        #endif
-
-        if _CDV_willFinishLaunchingWithOptions {
-            return self.CordovaApplication(application, willFinishLaunchingWithOptions:launchOptions);
-        }
     }
 }
 
