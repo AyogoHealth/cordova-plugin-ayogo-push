@@ -71,7 +71,7 @@ extension CDVAppDelegate {
 
 
 
-    func CordovaApplication(_ application : UIApplication, didRegister notificationSettings : UIUserNotificationSettings) {
+    @objc func CordovaApplication(_ application : UIApplication, didRegister notificationSettings : UIUserNotificationSettings) {
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: CordovaDidRegisterUserNotificationSettings), object: notificationSettings);
 
         if _CDV_didRegisterUserNotificationSettings {
@@ -81,7 +81,7 @@ extension CDVAppDelegate {
     }
 
 
-    func CordovaApplication(_ application : UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken : NSData) {
+    @objc func CordovaApplication(_ application : UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken : NSData) {
         let description  = deviceToken.description;
         let token = description.replacingOccurrences(of: "<", with:"").replacingOccurrences(of: ">", with: "").replacingOccurrences(of: " ", with :"");
 
@@ -94,7 +94,7 @@ extension CDVAppDelegate {
     }
 
 
-    func CordovaApplication(_ application : UIApplication, didFailToRegisterForRemoteNotificationsWithError error : NSError) {
+    @objc func CordovaApplication(_ application : UIApplication, didFailToRegisterForRemoteNotificationsWithError error : NSError) {
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: CordovaDidFailToRegisterForRemoteNotificationsWithError), object: error);
 
         if _CDV_didFailToRegisterForRemoteNotifications {
@@ -104,7 +104,7 @@ extension CDVAppDelegate {
     }
 
 
-    func CordovaApplication(_ application : UIApplication, willFinishLaunchingWithOptions launchOptions: NSDictionary) {
+    @objc func CordovaApplication(_ application : UIApplication, willFinishLaunchingWithOptions launchOptions: NSDictionary) {
         #if swift(>=2.3)
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().delegate = self;
