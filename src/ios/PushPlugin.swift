@@ -90,7 +90,7 @@ class PushPlugin : CDVPlugin {
 
     /* Push Notification Registrations ***************************************/
 
-    func registerPush(_ command : CDVInvokedUrlCommand) {
+    @objc func registerPush(_ command : CDVInvokedUrlCommand) {
         self.registrationCallback = command.callbackId;
 
         let permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
@@ -107,7 +107,7 @@ class PushPlugin : CDVPlugin {
     }
 
 
-    func unregisterPush(_ command : CDVInvokedUrlCommand) {
+    @objc func unregisterPush(_ command : CDVInvokedUrlCommand) {
         UIApplication.shared.unregisterForRemoteNotifications();
 
         let registration = UserDefaults.standard.object(forKey: CDV_PushRegistration);
