@@ -2,6 +2,8 @@
 
 #import "Cordova/CDVAppDelegate.h"
 
+#import <UserNotifications/UserNotifications.h>
+
 @interface CDVAppDelegate (appScope)
 
 - (void) application:(UIApplication *) application didRegisterForRemoteNotificationsWithDeviceToken: (NSData *) deviceToken;

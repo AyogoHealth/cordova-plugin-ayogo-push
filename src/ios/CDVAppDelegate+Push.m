@@ -1,7 +1,6 @@
 /*! Copyright 2018 Ayogo Health Inc. */
 
 #import "CDVAppDelegate+Push.h"
-#import <UserNotifications/UserNotifications.h>
 
 @implementation CDVAppDelegate (push)
 
