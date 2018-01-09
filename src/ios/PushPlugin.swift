@@ -2,6 +2,9 @@
 
 import UserNotifications;
 
+let CDV_PushPreference      = "CordovaPushPreference";
+let CDV_PushRegistration    = "CordovaPushRegistration";
+
 @objc(CDVPushPlugin)
 class PushPlugin : CDVPlugin {
     private var registrationCallback : String? = nil;
@@ -11,12 +14,12 @@ class PushPlugin : CDVPlugin {
     override func pluginInitialize() {
         NotificationCenter.default.addObserver(self,
                 selector: #selector(PushPlugin._didRegisterForRemoteNotifications(_:)),
-                name: NSNotification.Name(rawValue: CordovaDidRegisterForRemoteNotificationsWithDeviceToken),
+                name: NSNotification.Name(rawValue: "CordovaDidRegisterForRemoteNotificationsWithDeviceToken"),
                 object: nil);
 
         NotificationCenter.default.addObserver(self,
                 selector: #selector(PushPlugin._didFailToRegisterForRemoteNotifications(_:)),
-                name: NSNotification.Name(rawValue: CordovaDidFailToRegisterForRemoteNotificationsWithError),
+                name: NSNotification.Name(rawValue: "CordovaDidFailToRegisterForRemoteNotificationsWithError"),
                 object: nil);
 
         NotificationCenter.default.addObserver(self,
