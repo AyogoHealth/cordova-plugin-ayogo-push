@@ -42,8 +42,8 @@
           <string>production</string>
         </config-file>
 
+        <header-file src="src/ios/CDVAppDelegate+Push.h" />
         <source-file src="src/ios/PushPlugin.swift" />
-        <source-file src="src/ios/CDVAppDelegate+Push.swift" />
         <source-file src="src/ios/CDVAppDelegate+Push.m" />
     </platform>
 
