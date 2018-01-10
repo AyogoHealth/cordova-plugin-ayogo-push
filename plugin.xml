@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
     id="cordova-plugin-ayogo-push"
-    version="1.0.0">
+    version="2.0.0">
 
     <name>Push</name>
     <description>Push Notifications</description>
     <keywords>cordova,ios,push,notifications</keywords>
 
     <engines>
-        <engine name="cordova-ios" version=">= 4.0.0" />
-        <engine name="cordova-android" version=">= 4.0.0" />
+        <engine name="cordova-ios" version=">= 4.5.0" />
+        <engine name="cordova-android" version=">= 7.0.0" />
     </engines>
 
     <js-module src="www/push.js" name="Push">
@@ -20,7 +20,7 @@
         <clobbers target="window.notificationManager" />
     </js-module>
 
-    <hook type="before_compile" src="src/ios/swift-hook.js" />
+    <hook type="after_prepare" src="src/ios/swift-hook.js" />
 
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
@@ -42,8 +42,8 @@
           <string>production</string>
         </config-file>
 
+        <header-file src="src/ios/CDVAppDelegate+Push.h" />
         <source-file src="src/ios/PushPlugin.swift" />
-        <source-file src="src/ios/CDVAppDelegate+Push.swift" />
         <source-file src="src/ios/CDVAppDelegate+Push.m" />
     </platform>
 

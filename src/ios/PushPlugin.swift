@@ -1,8 +1,9 @@
-/*! Copyright 2016 Ayogo Health Inc. */
+/*! Copyright 2018 Ayogo Health Inc. */
 
-#if swift(>=2.3)
 import UserNotifications;
-#endif
+
+let CDV_PushPreference      = "CordovaPushPreference";
+let CDV_PushRegistration    = "CordovaPushRegistration";
 
 @objc(CDVPushPlugin)
 class PushPlugin : CDVPlugin {
@@ -12,18 +13,13 @@ class PushPlugin : CDVPlugin {
 
     override func pluginInitialize() {
         NotificationCenter.default.addObserver(self,
-                selector: #selector(PushPlugin._didRegisterUserNotificationSettings(_:)),
-                name: NSNotification.Name(rawValue: CordovaDidRegisterUserNotificationSettings),
-                object: nil);
-
-        NotificationCenter.default.addObserver(self,
                 selector: #selector(PushPlugin._didRegisterForRemoteNotifications(_:)),
-                name: NSNotification.Name(rawValue: CordovaDidRegisterForRemoteNotificationsWithDeviceToken),
+                name: NSNotification.Name(rawValue: "CordovaDidRegisterForRemoteNotificationsWithDeviceToken"),
                 object: nil);
 
         NotificationCenter.default.addObserver(self,
                 selector: #selector(PushPlugin._didFailToRegisterForRemoteNotifications(_:)),
-                name: NSNotification.Name(rawValue: CordovaDidFailToRegisterForRemoteNotificationsWithError),
+                name: NSNotification.Name(rawValue: "CordovaDidFailToRegisterForRemoteNotificationsWithError"),
                 object: nil);
 
         NotificationCenter.default.addObserver(self,
@@ -67,51 +63,26 @@ class PushPlugin : CDVPlugin {
 
 
     internal func _doRegister() {
-        #if swift(>=2.3)
-        if #available(iOS 10.0, *) {
-            let options: UNAuthorizationOptions = [.badge, .alert, .sound];
+        let options: UNAuthorizationOptions = [.badge, .alert, .sound];
 
-            UNUserNotificationCenter.current().requestAuthorization(options: options) { (granted, error) in
-                let permission = granted ? "granted" : "denied";
+        UNUserNotificationCenter.current().requestAuthorization(options: options) { (granted, error) in
+            let permission = granted ? "granted" : "denied";
 
-                UserDefaults.standard.set(permission, forKey:CDV_PushPreference);
+            UserDefaults.standard.set(permission, forKey:CDV_PushPreference);
 
-                if let callback = self.permissionCallback {
-                    let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
-                    self.commandDelegate.send(result, callbackId: callback);
+            if let callback = self.permissionCallback {
+                let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
+                self.commandDelegate.send(result, callbackId: callback);
 
-                    self.permissionCallback = nil;
-                }
+                self.permissionCallback = nil;
             }
-
-            return;
-        }
-        #endif
-
-        // Note that this falls into the `else` block from above on iOS 10
-        UIApplication.shared.registerUserNotificationSettings(UIUserNotificationSettings(types: [.alert, .badge, .sound], categories: nil));
-    }
-
-
-    internal func _didRegisterUserNotificationSettings(_ notification : NSNotification) {
-        let settings = notification.object as! UIUserNotificationSettings;
-        let permission = (settings.types == []) ? "denied" : "granted";
-
-        UserDefaults.standard.set(permission, forKey:CDV_PushPreference);
-
-        if let callback = self.permissionCallback {
-            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
-            self.commandDelegate.send(result, callbackId: callback);
-
-            self.permissionCallback = nil;
         }
     }
-
 
 
     /* Push Notification Registrations ***************************************/
 
-    func registerPush(_ command : CDVInvokedUrlCommand) {
+    @objc func registerPush(_ command : CDVInvokedUrlCommand) {
         self.registrationCallback = command.callbackId;
 
         let permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
@@ -128,7 +99,7 @@ class PushPlugin : CDVPlugin {
     }
 
 
-    func unregisterPush(_ command : CDVInvokedUrlCommand) {
+    @objc func unregisterPush(_ command : CDVInvokedUrlCommand) {
         UIApplication.shared.unregisterForRemoteNotifications();
 
         let registration = UserDefaults.standard.object(forKey: CDV_PushRegistration);
@@ -166,7 +137,7 @@ class PushPlugin : CDVPlugin {
     }
 
 
-    internal func _didRegisterForRemoteNotifications(_ notification : NSNotification) {
+    @objc internal func _didRegisterForRemoteNotifications(_ notification : NSNotification) {
         let token = notification.object as! String;
 
         NSLog("REGISTERED WITH DEVICE TOKEN: \(token)");
@@ -182,7 +153,7 @@ class PushPlugin : CDVPlugin {
     }
 
 
-    internal func _didFailToRegisterForRemoteNotifications(_ notification : NSNotification) {
+    @objc internal func _didFailToRegisterForRemoteNotifications(_ notification : NSNotification) {
         let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
         self.commandDelegate.send(result, callbackId: self.registrationCallback);
 
@@ -225,73 +196,38 @@ class PushPlugin : CDVPlugin {
 
         let id : String = options?.object(forKey: "tag") as? String ?? command.callbackId;
 
-        #if swift(>=2.3)
-        if #available(iOS 10.0, *) {
-            let content = UNMutableNotificationContent();
-            //content.sound = UNNotificationSound.`default`();
+        let content = UNMutableNotificationContent();
+        //content.sound = UNNotificationSound.`default`();
 
-            if let body = options?.object(forKey: "body") as? String {
-                content.body = body;
-                content.title = title;
-            } else {
-                content.body = title;
-            }
-
-            if let data = options?.object(forKey: "data") as? [NSObject : AnyObject] {
-                content.userInfo = data;
-            }
-
-            var trigger : UNNotificationTrigger? = nil;
-
-            if let at = (options?.object(forKey: "at") as AnyObject).doubleValue {
-                let scheduleDate = NSDate(timeIntervalSince1970: at/1000.0);
-                trigger = UNTimeIntervalNotificationTrigger.init(timeInterval: scheduleDate.timeIntervalSince(NSDate() as Date), repeats: false);
-            }
-
-            let request = UNNotificationRequest.init(identifier: id, content: content, trigger: trigger);
-
-            UNUserNotificationCenter.current().add(request) { (error) in
-                if error != nil{
-                    let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "TypeError");
-                    self.commandDelegate.send(result, callbackId: command.callbackId);
-                    return;
-                }
-
-                self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
-            }
-
-            return;
-        }
-        #endif
-
-        let notification = UILocalNotification()
-        notification.soundName = UILocalNotificationDefaultSoundName;
-
-        if #available(iOS 8.2, *) {
-            if let body = options?.object(forKey: "body") as? String {
-                notification.alertBody = body;
-                notification.alertTitle = title;
-            } else {
-                notification.alertBody = title;
-            }
+        if let body = options?.object(forKey: "body") as? String {
+            content.body = body;
+            content.title = title;
         } else {
-            notification.alertBody = title;
+            content.body = title;
         }
 
         if let data = options?.object(forKey: "data") as? [NSObject : AnyObject] {
-            notification.userInfo = data;
-            notification.userInfo!["__CDV_id__"] = id;
-        } else {
-            notification.userInfo = [ "__CDV_id__": id ];
+            content.userInfo = data;
         }
+
+        var trigger : UNNotificationTrigger? = nil;
 
         if let at = (options?.object(forKey: "at") as AnyObject).doubleValue {
-            notification.fireDate = NSDate(timeIntervalSince1970: at/1000.0) as Date;
+            let scheduleDate = NSDate(timeIntervalSince1970: at/1000.0);
+            trigger = UNTimeIntervalNotificationTrigger.init(timeInterval: scheduleDate.timeIntervalSince(NSDate() as Date), repeats: false);
         }
 
-        UIApplication.shared.scheduleLocalNotification(notification);
+        let request = UNNotificationRequest.init(identifier: id, content: content, trigger: trigger);
 
-        self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
+        UNUserNotificationCenter.current().add(request) { (error) in
+            if error != nil{
+                let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "TypeError");
+                self.commandDelegate.send(result, callbackId: command.callbackId);
+                return;
+            }
+
+            self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
+        }
     }
 
 
@@ -301,88 +237,42 @@ class PushPlugin : CDVPlugin {
             return;
         }
 
-        #if swift(>=2.3)
-        if #available(iOS 10.0, *) {
-            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [id]);
-            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [id]);
-
-            self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
-            return;
-        }
-        #endif
-
-        _ = UIApplication.shared.scheduledLocalNotifications?
-            .filter({ $0.userInfo?["__CDV_id__"] as? String == id })
-            .map({ UIApplication.shared.cancelLocalNotification($0) });
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [id]);
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [id]);
 
         self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
     }
 
 
     func getNotifications(_ command : CDVInvokedUrlCommand) {
-        #if swift(>=2.3)
-        if #available(iOS 10.0, *) {
-            UNUserNotificationCenter.current().getPendingNotificationRequests() { (requests) in
-                let notifications : [[String : Any]]? = requests.map() { (req) in
-                    var ret = [String : Any]();
-
-                    ret["tag"] = req.identifier;
-                    ret["title"] = req.content.title;
-                    ret["body"] = req.content.body;
-                    ret["userInfo"] = req.content.userInfo;
-
-                    let formatter = DateFormatter()
-                    formatter.calendar = Calendar(identifier: .iso8601)
-                    formatter.locale = Locale(identifier: "en_US_POSIX")
-                    formatter.timeZone = TimeZone(secondsFromGMT: 0)
-                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
-
-                    if let trigger = req.trigger as? UNTimeIntervalNotificationTrigger, trigger.nextTriggerDate() != nil {
-                      ret["at"] = formatter.string(from: trigger.nextTriggerDate()!);
-                    }
-
-                    if let trigger = req.trigger as? UNCalendarNotificationTrigger, trigger.nextTriggerDate() != nil {
-                      ret["at"] = formatter.string(from: trigger.nextTriggerDate()!);
-                    }
-
-                    return ret;
-                };
-
-                self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK, messageAs:notifications), callbackId: command.callbackId);
-            };
-
-            return;
-        }
-        #endif
-
-        let notifications : [[String : Any]]? = UIApplication.shared.scheduledLocalNotifications?
-            .map({ (notification) in
+        UNUserNotificationCenter.current().getPendingNotificationRequests() { (requests) in
+            let notifications : [[String : Any]]? = requests.map() { (req) in
                 var ret = [String : Any]();
 
-                if #available(iOS 8.2, *) {
-                    ret["title"] = notification.alertTitle;
-                    ret["body"] = notification.alertBody;
-                } else {
-                    ret["title"] = notification.alertBody;
+                ret["tag"] = req.identifier;
+                ret["title"] = req.content.title;
+                ret["body"] = req.content.body;
+                ret["userInfo"] = req.content.userInfo;
+
+                let formatter = DateFormatter()
+                formatter.calendar = Calendar(identifier: .iso8601)
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.timeZone = TimeZone(secondsFromGMT: 0)
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+
+                if let trigger = req.trigger as? UNTimeIntervalNotificationTrigger, trigger.nextTriggerDate() != nil {
+                  ret["at"] = formatter.string(from: trigger.nextTriggerDate()!);
                 }
 
-                ret["tag"] = notification.userInfo?["__CDV_id__"];
-                ret["data"] = notification.userInfo;
-
-                if let at = notification.fireDate {
-                    let formatter = DateFormatter()
-                    formatter.calendar = Calendar(identifier: .iso8601)
-                    formatter.locale = Locale(identifier: "en_US_POSIX")
-                    formatter.timeZone = TimeZone(secondsFromGMT: 0)
-                    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
-
-                    ret["at"] = formatter.string(from: at)
+                if let trigger = req.trigger as? UNCalendarNotificationTrigger, trigger.nextTriggerDate() != nil {
+                  ret["at"] = formatter.string(from: trigger.nextTriggerDate()!);
                 }
 
                 return ret;
-             });
+            };
 
-        self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK, messageAs:notifications), callbackId: command.callbackId);
+            self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK, messageAs:notifications), callbackId: command.callbackId);
+        };
     }
 
 
@@ -391,7 +281,7 @@ class PushPlugin : CDVPlugin {
 
     /* Notification Launch URL handling **************************************/
 
-    internal func _didFinishLaunchingWithOptions(_ notification : NSNotification) {
+    @objc internal func _didFinishLaunchingWithOptions(_ notification : NSNotification) {
         UIApplication.shared.applicationIconBadgeNumber = 0;
 
         let options = notification.userInfo;
@@ -407,5 +297,7 @@ class PushPlugin : CDVPlugin {
                 NotificationCenter.default.post(name: NSNotification.Name.CDVPluginHandleOpenURL, object: data);
             }
         }
+        
+        UNUserNotificationCenter.current().delegate = self.appDelegate() as? UNUserNotificationCenterDelegate;
     }
 }

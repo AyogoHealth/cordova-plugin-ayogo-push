@@ -3,7 +3,7 @@
 const fs = require('fs');
 
 module.exports = function(context) {
-    if (context.opts.cordova.platforms.indexOf('ios') >= 0) {
+    if (context.opts.platforms.indexOf('ios') >= 0) {
         console.warn('UPDATING the Xcode Project files');
 
         const encoding = 'utf-8';
@@ -11,9 +11,11 @@ module.exports = function(context) {
 
         var xcconfig = fs.readFileSync(filepath, encoding);
 
-        const content = '\nEMBEDDED_CONTENT_CONTAINS_SWIFT = YES\nSWIFT_VERSION=3.0\nALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=NO';
+        const content = ['EMBEDDED_CONTENT_CONTAINS_SWIFT = YES','SWIFT_VERSION=4.0','ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=NO'].filter(s => xcconfig.indexOf(s) === -1);
 
-        xcconfig += content;
-        fs.writeFileSync(filepath, xcconfig, encoding);
+        if (content.length > 0) {
+          xcconfig += `\n${content.join('\n')}\n`;
+          fs.writeFileSync(filepath, xcconfig, encoding);
+        }
     }
 };
