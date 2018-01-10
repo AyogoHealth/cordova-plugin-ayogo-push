@@ -11,9 +11,9 @@ module.exports = function(context) {
 
         var xcconfig = fs.readFileSync(filepath, encoding);
 
-        const content = '\nEMBEDDED_CONTENT_CONTAINS_SWIFT = YES\nSWIFT_VERSION=4.0\nALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=NO';
+        const content = ['EMBEDDED_CONTENT_CONTAINS_SWIFT = YES','SWIFT_VERSION=4.0','ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=NO'].filter(s => xcconfig.indexOf(s) === 1);
 
-        xcconfig += content;
+        xcconfig += `\n${content.join('\n')}\n`;
         fs.writeFileSync(filepath, xcconfig, encoding);
     }
 };
