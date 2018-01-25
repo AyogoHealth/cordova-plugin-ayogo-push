@@ -5,6 +5,7 @@ package com.ayogo.push;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -119,7 +120,8 @@ public class PushPlugin extends CordovaPlugin
             final String url = intent.getExtras().getString("url");
             cordova.getActivity().runOnUiThread(new Runnable() {
                 public void run() {
-                    webView.loadUrl("javascript:window.handleOpenURL('" + url + "')");
+                    Context context = cordova.getActivity().getApplicationContext();
+                    context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
                 }
             });
         }
