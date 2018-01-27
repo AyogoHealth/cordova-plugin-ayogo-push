@@ -17,6 +17,15 @@
     [NSNotificationCenter.defaultCenter postNotificationName: @"CordovaDidFailToRegisterForRemoteNotificationsWithError" object: error];
 }
 
+- (void) application:(UIApplication *) application didReceiveRemoteNotification: (NSDictionary *) userInfo fetchCompletionHandler: (void (^)(UIBackgroundFetchResult result)) completionHandler {
+    if ([userInfo objectForKey:@"url"] != nil) {
+        NSURL * url = [NSURL URLWithString: [userInfo objectForKey:@"url"]];
+        [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:CDVPluginHandleOpenURLNotification object:url]];
+    }
+
+    completionHandler(UIBackgroundFetchResultNewData);
+}
+
 - (void) userNotificationCenter: (UNUserNotificationCenter *) center willPresentNotification: (UNNotification *) notification withCompletionHandler: (void (^)(UNNotificationPresentationOptions options)) completionHandler {
     completionHandler(UNNotificationPresentationOptionAlert | UNNotificationPresentationOptionSound);
 }
