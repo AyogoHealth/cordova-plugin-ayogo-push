@@ -88,7 +88,12 @@
         <source-file src="src/android/com/ayogo/notification/ScheduledNotificationManager.java" target-dir="src/com/ayogo/notification" />
         <source-file src="src/android/com/ayogo/notification/TriggerReceiver.java" target-dir="src/com/ayogo/notification" />
 
-        <framework src="com.android.support:support-v4:+" value="gradle" />
+        <preference name="ANDROID_SUPPORT_V4_VERSION" default="27.+" />
+        <preference name="FCM_VERSION" default="11.8.0" />
+
+        <framework src="com.android.support:support-v4:$ANDROID_SUPPORT_V4_VERSION" />
+        <framework src="com.google.android.gms:play-services-base:$FCM_VERSION" />
+        <framework src="com.google.firebase:firebase-messaging:$FCM_VERSION" />
         <framework src="src/android/push.gradle" custom="true" type="gradleReference" />
     </platform>
 </plugin>
