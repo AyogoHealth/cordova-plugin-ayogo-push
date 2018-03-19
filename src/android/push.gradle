@@ -12,6 +12,6 @@ buildscript {
     }
 }
 
-ext.postBuildExtras = {
+cdvPluginPostBuildExtras.add({
     apply plugin: com.google.gms.googleservices.GoogleServicesPlugin
-}
+})
