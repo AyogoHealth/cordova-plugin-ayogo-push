@@ -26,8 +26,4 @@
     completionHandler(UIBackgroundFetchResultNewData);
 }
 
-- (void) userNotificationCenter: (UNUserNotificationCenter *) center willPresentNotification: (UNNotification *) notification withCompletionHandler: (void (^)(UNNotificationPresentationOptions options)) completionHandler {
-    completionHandler(UNNotificationPresentationOptionAlert | UNNotificationPresentationOptionSound);
-}
-
 @end
