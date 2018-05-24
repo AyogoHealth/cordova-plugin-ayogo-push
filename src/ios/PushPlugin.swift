@@ -6,7 +6,7 @@ let CDV_PushPreference      = "CordovaPushPreference";
 let CDV_PushRegistration    = "CordovaPushRegistration";
 
 @objc(CDVPushPlugin)
-class PushPlugin : CDVPlugin {
+class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
     private var registrationCallback : String? = nil;
     private var permissionCallback : String? = nil;
 
@@ -283,6 +283,7 @@ class PushPlugin : CDVPlugin {
 
     @objc internal func _didFinishLaunchingWithOptions(_ notification : NSNotification) {
         UIApplication.shared.applicationIconBadgeNumber = 0;
+        UNUserNotificationCenter.current().delegate = self;
 
         let options = notification.userInfo;
         if options == nil {
@@ -297,7 +298,10 @@ class PushPlugin : CDVPlugin {
                 NotificationCenter.default.post(name: NSNotification.Name.CDVPluginHandleOpenURL, object: data);
             }
         }
-        
-        UNUserNotificationCenter.current().delegate = self.appDelegate() as? UNUserNotificationCenterDelegate;
     }
+    
+    @objc internal func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+       completionHandler([.alert, .sound, .badge]);
+    }
+    
 }
