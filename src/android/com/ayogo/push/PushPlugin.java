@@ -121,7 +121,9 @@ public class PushPlugin extends CordovaPlugin
             cordova.getActivity().runOnUiThread(new Runnable() {
                 public void run() {
                     Context context = cordova.getActivity().getApplicationContext();
-                    context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent);
                 }
             });
         }
