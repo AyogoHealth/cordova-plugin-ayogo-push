@@ -73,6 +73,12 @@
                     <action android:name="android.intent.action.BOOT_COMPLETED" />
                 </intent-filter>
             </receiver>
+
+            <service android:name="com.ayogo.push.MessagingService">
+              <intent-filter>
+                  <action android:name="com.google.firebase.MESSAGING_EVENT" />
+              </intent-filter>
+            </service>
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/manifest">
