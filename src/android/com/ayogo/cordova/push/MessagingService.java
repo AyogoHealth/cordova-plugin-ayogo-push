@@ -1,6 +1,6 @@
 // Copyright 2018 Ayogo Health Inc.
 
-package com.ayogo.push;
+package com.ayogo.cordova.push;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
