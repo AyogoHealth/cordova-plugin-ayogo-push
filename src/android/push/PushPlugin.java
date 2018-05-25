@@ -1,6 +1,6 @@
 // Copyright 2014 Ayogo Health Inc.
 
-package com.ayogo.push;
+package com.ayogo.cordova.push;
 
 import android.app.Activity;
 import android.content.Context;

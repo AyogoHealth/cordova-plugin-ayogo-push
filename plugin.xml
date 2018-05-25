@@ -50,7 +50,7 @@
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="Push">
-                <param name="android-package" value="com.ayogo.push.PushPlugin" />
+                <param name="android-package" value="com.ayogo.cordova.push.PushPlugin" />
             </feature>
             <feature name="LocalNotification">
                 <param name="android-package" value="com.ayogo.notification.NotificationPlugin"/>
@@ -86,13 +86,14 @@
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
         </config-file>
 
-        <source-file src="src/android/com/ayogo/push/PushPlugin.java" target-dir="src/com/ayogo/push" />
+        <source-file src="src/android/push/PushPlugin.java" target-dir="src/com/ayogo/cordova/push" />
+        <source-file src="src/android/push/MessagingService.java" target-dir="src/com/ayogo/cordova/push" />
 
-        <source-file src="src/android/com/ayogo/notification/NotificationPlugin.java" target-dir="src/com/ayogo/notification" />
-        <source-file src="src/android/com/ayogo/notification/RestoreReceiver.java" target-dir="src/com/ayogo/notification" />
-        <source-file src="src/android/com/ayogo/notification/ScheduledNotification.java" target-dir="src/com/ayogo/notification" />
-        <source-file src="src/android/com/ayogo/notification/ScheduledNotificationManager.java" target-dir="src/com/ayogo/notification" />
-        <source-file src="src/android/com/ayogo/notification/TriggerReceiver.java" target-dir="src/com/ayogo/notification" />
+        <source-file src="src/android/notification/NotificationPlugin.java" target-dir="src/com/ayogo/notification" />
+        <source-file src="src/android/notification/RestoreReceiver.java" target-dir="src/com/ayogo/notification" />
+        <source-file src="src/android/notification/ScheduledNotification.java" target-dir="src/com/ayogo/notification" />
+        <source-file src="src/android/notification/ScheduledNotificationManager.java" target-dir="src/com/ayogo/notification" />
+        <source-file src="src/android/notification/TriggerReceiver.java" target-dir="src/com/ayogo/notification" />
 
         <preference name="ANDROID_SUPPORT_V4_VERSION" default="27.+" />
         <preference name="FCM_VERSION" default="11.8.0" />
