@@ -92,6 +92,19 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
                 self.permissionCallback = nil;
             }
+
+            if let callback = self.registrationCallback {
+                if granted {
+                    DispatchQueue.main.async {
+                        UIApplication.shared.registerForRemoteNotifications();
+                    }
+                } else {
+                    let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
+                    self.commandDelegate.send(result, callbackId: callback);
+
+                    self.registrationCallback = nil;
+                }
+            }
         }
     }
 
@@ -105,7 +118,6 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
         if permission != "denied" {
             self._doRegister();
-            UIApplication.shared.registerForRemoteNotifications();
         } else {
             let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
             self.commandDelegate.send(result, callbackId: self.registrationCallback);
