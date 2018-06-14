@@ -44,7 +44,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
     /* Notification Permission ***********************************************/
 
-    func hasPermission(_ command : CDVInvokedUrlCommand) {
+    @objc func hasPermission(_ command : CDVInvokedUrlCommand) {
         var permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
 
         if permission == nil {
@@ -299,9 +299,9 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
             }
         }
     }
-    
+
     @objc internal func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
        completionHandler([.alert, .sound, .badge]);
     }
-    
+
 }
