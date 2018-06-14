@@ -47,18 +47,33 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
     @objc func hasPermission(_ command : CDVInvokedUrlCommand) {
         var permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
 
-        if permission == nil {
-            permission = "default";
-        }
+        if #available(iOS 10.0, *) {
+            UNUserNotificationCenter.current().getNotificationSettings { (settings) in
+                switch settings.authorizationStatus {
+                    case .denied:
+                        permission = "denied";
+                    case .authorized:
+                        permission = "granted";
+                    default:
+                        permission = permission ?? "default";
+                }
 
-        // Ensure that it matches the current notification settings
-        let settings = UIApplication.shared.currentUserNotificationSettings;
-        if settings != nil && settings!.types == [] && permission != "default" {
-            permission = "denied";
-        }
+                let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
+                self.commandDelegate.send(result, callbackId: command.callbackId);
+            }
+        } else {
+            if permission == nil {
+                permission = "default";
+            }
 
-        let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
-        self.commandDelegate.send(result, callbackId: command.callbackId);
+            // Ensure that it matches the current notification settings
+            if let settings = UIApplication.shared.currentUserNotificationSettings, settings.types == [] && permission != "default" {
+                permission = "denied";
+            }
+
+            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
+            self.commandDelegate.send(result, callbackId: command.callbackId);
+        }
     }
 
 
@@ -76,6 +91,19 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
                 self.permissionCallback = nil;
             }
+
+            if let callback = self.registrationCallback {
+                if granted {
+                    DispatchQueue.main.async {
+                        UIApplication.shared.registerForRemoteNotifications();
+                    }
+                } else {
+                    let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
+                    self.commandDelegate.send(result, callbackId: callback);
+
+                    self.registrationCallback = nil;
+                }
+            }
         }
     }
 
@@ -89,7 +117,6 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
         if permission != "denied" {
             self._doRegister();
-            UIApplication.shared.registerForRemoteNotifications();
         } else {
             let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
             self.commandDelegate.send(result, callbackId: self.registrationCallback);
@@ -291,8 +318,8 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
         }
 
 
-        if let remoteNotification = options?[UIApplicationLaunchOptionsKey.remoteNotification] as! NSDictionary! {
-            if let url = remoteNotification["url"] as! String! {
+        if let remoteNotification = options?[UIApplicationLaunchOptionsKey.remoteNotification] as? NSDictionary {
+            if let url = remoteNotification["url"] as? String {
                 let data = NSURL(string: url);
 
                 NotificationCenter.default.post(name: NSNotification.Name.CDVPluginHandleOpenURL, object: data);
