@@ -67,8 +67,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
             }
 
             // Ensure that it matches the current notification settings
-            let settings = UIApplication.shared.currentUserNotificationSettings;
-            if settings != nil && settings!.types == [] && permission != "default" {
+            if let settings = UIApplication.shared.currentUserNotificationSettings, settings.types == [] && permission != "default" {
                 permission = "denied";
             }
 
