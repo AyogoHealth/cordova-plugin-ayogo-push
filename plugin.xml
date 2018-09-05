@@ -35,8 +35,6 @@ limitations under the License.
     <clobbers target="window.notificationManager" />
   </js-module>
 
-  <hook type="after_prepare" src="src/ios/swift-hook.js" />
-
   <platform name="ios">
     <config-file parent="/*" target="config.xml">
       <feature name="Push">
@@ -47,6 +45,8 @@ limitations under the License.
       <feature name="LocalNotification">
         <param name="ios-package" value="CDVPushPlugin" />
       </feature>
+
+      <preference name="SwiftVersion" value="4.0" />
     </config-file>
 
     <config-file parent="UIBackgroundModes" target="*-Info.plist">
