@@ -1,106 +1,121 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-    id="cordova-plugin-ayogo-push"
-    version="2.0.0">
+<!--
+Copyright 2018 Ayogo Health Inc.
 
-    <name>Push</name>
-    <description>Push Notifications</description>
-    <keywords>cordova,ios,push,notifications</keywords>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-    <engines>
-        <engine name="cordova-ios" version=">= 4.5.0" />
-        <engine name="cordova-android" version=">= 7.0.0" />
-    </engines>
+https://www.apache.org/licenses/LICENSE-2.0
 
-    <js-module src="www/push.js" name="Push">
-        <clobbers target="window.pushRegistrationManager" />
-    </js-module>
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="cordova-plugin-ayogo-push" version="2.0.0">
+  <name>cordova-plugin-ayogo-push</name>
+  <description>A Cordova plugin for push and locally scheduled notifications.</description>
+  <keywords>cordova,ios,android,push,notifications</keywords>
+  <license>Apache 2.0</license>
+  <repo>https://github.com/AyogoHealth/cordova-plugin-ayogo-push.git</repo>
+  <issues>https://github.com/AyogoHealth/cordova-plugin-ayogo-push/issues</issues>
 
-    <js-module src="www/notification.js" name="Notification">
-        <clobbers target="window.notificationManager" />
-    </js-module>
+  <engines>
+    <engine name="cordova-ios" version=">= 4.5.0" />
+    <engine name="cordova-android" version=">= 7.0.0" />
+  </engines>
 
-    <hook type="after_prepare" src="src/ios/swift-hook.js" />
+  <js-module src="www/push.js" name="Push">
+    <clobbers target="window.pushRegistrationManager" />
+  </js-module>
 
-    <platform name="ios">
-        <config-file parent="/*" target="config.xml">
-            <feature name="Push">
-                <param name="ios-package" value="CDVPushPlugin" />
-                <param name="onload" value="true" />
-            </feature>
+  <js-module src="www/notification.js" name="Notification">
+    <clobbers target="window.notificationManager" />
+  </js-module>
 
-            <feature name="LocalNotification">
-                <param name="ios-package" value="CDVPushPlugin" />
-            </feature>
-        </config-file>
+  <hook type="after_prepare" src="src/ios/swift-hook.js" />
 
-        <config-file parent="aps-environment" target="*/Entitlements-Debug.plist">
-          <string>development</string>
-        </config-file>
+  <platform name="ios">
+    <config-file parent="/*" target="config.xml">
+      <feature name="Push">
+        <param name="ios-package" value="CDVPushPlugin" />
+        <param name="onload" value="true" />
+      </feature>
 
-        <config-file parent="aps-environment" target="*/Entitlements-Release.plist">
-          <string>production</string>
-        </config-file>
+      <feature name="LocalNotification">
+        <param name="ios-package" value="CDVPushPlugin" />
+      </feature>
+    </config-file>
 
-        <header-file src="src/ios/CDVAppDelegate+Push.h" />
-        <source-file src="src/ios/PushPlugin.swift" />
-        <source-file src="src/ios/CDVAppDelegate+Push.m" />
-    </platform>
+    <config-file parent="aps-environment" target="*/Entitlements-Debug.plist">
+      <string>development</string>
+    </config-file>
 
-    <platform name="android">
-        <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="Push">
-                <param name="android-package" value="com.ayogo.cordova.push.PushPlugin" />
-            </feature>
-            <feature name="LocalNotification">
-                <param name="android-package" value="com.ayogo.notification.NotificationPlugin"/>
-            </feature>
-        </config-file>
+    <config-file parent="aps-environment" target="*/Entitlements-Release.plist">
+      <string>production</string>
+    </config-file>
 
-        <config-file target="AndroidManifest.xml" parent="/manifest/application/activity">
-            <intent-filter>
-                <action android:name="push" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </config-file>
+    <header-file src="src/ios/CDVAppDelegate+Push.h" />
+    <source-file src="src/ios/PushPlugin.swift" />
+    <source-file src="src/ios/CDVAppDelegate+Push.m" />
+  </platform>
 
-        <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
+  <platform name="android">
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="Push">
+        <param name="android-package" value="com.ayogo.cordova.push.PushPlugin" />
+      </feature>
+      <feature name="LocalNotification">
+        <param name="android-package" value="com.ayogo.cordova.notification.NotificationPlugin"/>
+      </feature>
+    </config-file>
 
-            <receiver android:name="com.ayogo.notification.TriggerReceiver" android:exported="false" />
-            <receiver android:name="com.ayogo.notification.RestoreReceiver" android:exported="false" >
-                <intent-filter>
-                    <action android:name="android.intent.action.BOOT_COMPLETED" />
-                </intent-filter>
-            </receiver>
+    <config-file target="AndroidManifest.xml" parent="/manifest/application/activity">
+      <intent-filter>
+        <action android:name="push" />
+        <category android:name="android.intent.category.DEFAULT" />
+      </intent-filter>
+    </config-file>
 
-            <service android:name="com.ayogo.cordova.push.MessagingService">
-              <intent-filter>
-                  <action android:name="com.google.firebase.MESSAGING_EVENT" />
-              </intent-filter>
-            </service>
-        </config-file>
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+      <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
 
-        <config-file target="AndroidManifest.xml" parent="/manifest">
-            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-        </config-file>
+      <receiver android:name="com.ayogo.notification.TriggerReceiver" android:exported="false" />
+      <receiver android:name="com.ayogo.notification.RestoreReceiver" android:exported="false" >
+        <intent-filter>
+          <action android:name="android.intent.action.BOOT_COMPLETED" />
+        </intent-filter>
+      </receiver>
 
-        <source-file src="src/android/push/PushPlugin.java" target-dir="src/com/ayogo/cordova/push" />
-        <source-file src="src/android/push/MessagingService.java" target-dir="src/com/ayogo/cordova/push" />
+      <service android:name="com.ayogo.cordova.push.MessagingService">
+        <intent-filter>
+          <action android:name="com.google.firebase.MESSAGING_EVENT" />
+        </intent-filter>
+      </service>
+    </config-file>
 
-        <source-file src="src/android/notification/NotificationPlugin.java" target-dir="src/com/ayogo/notification" />
-        <source-file src="src/android/notification/RestoreReceiver.java" target-dir="src/com/ayogo/notification" />
-        <source-file src="src/android/notification/ScheduledNotification.java" target-dir="src/com/ayogo/notification" />
-        <source-file src="src/android/notification/ScheduledNotificationManager.java" target-dir="src/com/ayogo/notification" />
-        <source-file src="src/android/notification/TriggerReceiver.java" target-dir="src/com/ayogo/notification" />
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+      <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    </config-file>
 
-        <preference name="ANDROID_SUPPORT_V4_VERSION" default="27.+" />
-        <preference name="FCM_VERSION" default="11.8.0" />
+    <source-file src="src/android/push/PushPlugin.java" target-dir="src/com/ayogo/cordova/push" />
+    <source-file src="src/android/push/MessagingService.java" target-dir="src/com/ayogo/cordova/push" />
 
-        <framework src="com.android.support:support-v4:$ANDROID_SUPPORT_V4_VERSION" />
-        <framework src="com.google.android.gms:play-services-base:$FCM_VERSION" />
-        <framework src="com.google.firebase:firebase-messaging:$FCM_VERSION" />
-        <framework src="src/android/push.gradle" custom="true" type="gradleReference" />
-    </platform>
+    <source-file src="src/android/notification/NotificationPlugin.java" target-dir="src/com/ayogo/cordova/notification" />
+    <source-file src="src/android/notification/RestoreReceiver.java" target-dir="src/com/ayogo/cordova/notification" />
+    <source-file src="src/android/notification/ScheduledNotification.java" target-dir="src/com/ayogo/cordova/notification" />
+    <source-file src="src/android/notification/ScheduledNotificationManager.java" target-dir="src/com/ayogo/cordova/notification" />
+    <source-file src="src/android/notification/TriggerReceiver.java" target-dir="src/com/ayogo/cordova/notification" />
+
+    <preference name="ANDROID_SUPPORT_V4_VERSION" default="27.+" />
+    <preference name="FCM_VERSION" default="11.8.0" />
+
+    <framework src="com.android.support:support-v4:$ANDROID_SUPPORT_V4_VERSION" />
+    <framework src="com.google.android.gms:play-services-base:$FCM_VERSION" />
+    <framework src="com.google.firebase:firebase-messaging:$FCM_VERSION" />
+    <framework src="src/android/push.gradle" custom="true" type="gradleReference" />
+  </platform>
 </plugin>
