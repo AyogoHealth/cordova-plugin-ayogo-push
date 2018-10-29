@@ -116,6 +116,7 @@ limitations under the License.
     <framework src="com.android.support:support-v4:$ANDROID_SUPPORT_V4_VERSION" />
     <framework src="com.google.android.gms:play-services-base:$FCM_VERSION" />
     <framework src="com.google.firebase:firebase-messaging:$FCM_VERSION" />
+    <framework src="com.google.firebase:firebase-core:$FCM_VERSION" />
     <framework src="src/android/push.gradle" custom="true" type="gradleReference" />
   </platform>
 </plugin>
