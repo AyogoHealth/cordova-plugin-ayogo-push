@@ -49,6 +49,12 @@ limitations under the License.
       </feature>
     </config-file>
 
+    <config-file parent="UIBackgroundModes" target="*-Info.plist">
+      <array>
+        <string>remote-notification</string>
+      </array>
+    </config-file>
+
     <config-file parent="aps-environment" target="*/Entitlements-Debug.plist">
       <string>development</string>
     </config-file>
