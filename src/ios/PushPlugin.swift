@@ -187,18 +187,22 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
         UserDefaults.standard.set(registration, forKey:CDV_PushRegistration);
 
-        let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs:registration);
-        self.commandDelegate.send(result, callbackId: self.registrationCallback);
+        if self.registrationCallback {
+            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs:registration);
+            self.commandDelegate.send(result, callbackId: self.registrationCallback);
 
-        self.registrationCallback = nil;
+            self.registrationCallback = nil;
+        }
     }
 
 
     @objc internal func _didFailToRegisterForRemoteNotifications(_ notification : NSNotification) {
-        let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
-        self.commandDelegate.send(result, callbackId: self.registrationCallback);
+        if self.registrationCallback {
+            let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
+            self.commandDelegate.send(result, callbackId: self.registrationCallback);
 
-        self.registrationCallback = nil;
+            self.registrationCallback = nil;
+        }
     }
 
 
