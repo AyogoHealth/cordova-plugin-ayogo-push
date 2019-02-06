@@ -59,9 +59,9 @@ public class MessagingService extends FirebaseMessagingService {
         Intent intent = new Intent();
         intent.setAction("push"); // This is important for the AppScope
         intent.setClassName(getApplicationContext(), activityClassName);
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         ApplicationInfo applicationInfo = null;
         Resources resources = null;
