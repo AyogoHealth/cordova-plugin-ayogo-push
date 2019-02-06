@@ -72,7 +72,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
                         permission = permission ?? "default";
                 }
 
-                let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
+                let result = CDVPluginResult(status: .ok, messageAs: permission);
                 self.commandDelegate.send(result, callbackId: command.callbackId);
             }
         } else {
@@ -85,7 +85,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
                 permission = "denied";
             }
 
-            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
+            let result = CDVPluginResult(status: .ok, messageAs: permission);
             self.commandDelegate.send(result, callbackId: command.callbackId);
         }
     }
@@ -100,7 +100,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
             UserDefaults.standard.set(permission, forKey:CDV_PushPreference);
 
             if let callback = self.permissionCallback {
-                let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
+                let result = CDVPluginResult(status: .ok, messageAs: permission);
                 self.commandDelegate.send(result, callbackId: callback);
 
                 self.permissionCallback = nil;
@@ -112,7 +112,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
                         UIApplication.shared.registerForRemoteNotifications();
                     }
                 } else {
-                    let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
+                    let result = CDVPluginResult(status: .ok, messageAs: permission);
                     self.commandDelegate.send(result, callbackId: callback);
 
                     self.registrationCallback = nil;
@@ -132,7 +132,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
         if permission != "denied" {
             self._doRegister();
         } else {
-            let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
+            let result = CDVPluginResult(status: .error, messageAs:"AbortError");
             self.commandDelegate.send(result, callbackId: self.registrationCallback);
 
             self.registrationCallback = nil;
@@ -146,14 +146,14 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
         let registration = UserDefaults.standard.object(forKey: CDV_PushRegistration);
 
         if registration == nil {
-            let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
+            let result = CDVPluginResult(status: .error, messageAs:"AbortError");
             self.commandDelegate.send(result, callbackId: command.callbackId);
             return;
         }
 
         UserDefaults.standard.removeObject(forKey: CDV_PushRegistration);
 
-        let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs:registration as! [String:String]);
+        let result = CDVPluginResult(status: .ok, messageAs:registration as! [String:String]);
         self.commandDelegate.send(result, callbackId: command.callbackId);
     }
 
@@ -161,7 +161,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
     @objc func getPushRegistration(_ command : CDVInvokedUrlCommand) {
         // Fail immediately if notifications aren't registered
         if !UIApplication.shared.isRegisteredForRemoteNotifications {
-            let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
+            let result = CDVPluginResult(status: .error, messageAs:"AbortError");
             self.commandDelegate.send(result, callbackId: command.callbackId);
             return;
         }
@@ -169,10 +169,10 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
         let registration = UserDefaults.standard.object(forKey: CDV_PushRegistration);
 
         if registration == nil {
-            let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
+            let result = CDVPluginResult(status: .error, messageAs:"AbortError");
             self.commandDelegate.send(result, callbackId: command.callbackId);
         } else {
-            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs:registration as! [String:String]);
+            let result = CDVPluginResult(status: .ok, messageAs:registration as! [String:String]);
             self.commandDelegate.send(result, callbackId: command.callbackId);
         }
     }
@@ -188,7 +188,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
         UserDefaults.standard.set(registration, forKey:CDV_PushRegistration);
 
         if self.registrationCallback != nil {
-            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs:registration);
+            let result = CDVPluginResult(status: .ok, messageAs:registration);
             self.commandDelegate.send(result, callbackId: self.registrationCallback);
 
             self.registrationCallback = nil;
@@ -198,7 +198,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
     @objc internal func _didFailToRegisterForRemoteNotifications(_ notification : NSNotification) {
         if self.registrationCallback != nil {
-            let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
+            let result = CDVPluginResult(status: .error, messageAs:"AbortError");
             self.commandDelegate.send(result, callbackId: self.registrationCallback);
 
             self.registrationCallback = nil;
@@ -216,7 +216,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
             self.permissionCallback = command.callbackId;
             self._doRegister();
         } else {
-            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs:permission);
+            let result = CDVPluginResult(status: .ok, messageAs:permission);
             self.commandDelegate.send(result, callbackId: command.callbackId);
         }
     }
@@ -224,7 +224,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
     @objc func showNotification(_ command : CDVInvokedUrlCommand) {
         guard let title = command.argument(at: 0) as? String else {
-            self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_ERROR), callbackId: command.callbackId);
+            self.commandDelegate.send(CDVPluginResult(status: .error), callbackId: command.callbackId);
             return;
         }
 
@@ -233,7 +233,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
         let permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
         if permission != "granted" {
-            let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"TypeError");
+            let result = CDVPluginResult(status: .error, messageAs:"TypeError");
             self.commandDelegate.send(result, callbackId: command.callbackId);
             return;
         }
@@ -266,26 +266,26 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
         UNUserNotificationCenter.current().add(request) { (error) in
             if error != nil{
-                let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "TypeError");
+                let result = CDVPluginResult(status: .error, messageAs: "TypeError");
                 self.commandDelegate.send(result, callbackId: command.callbackId);
                 return;
             }
 
-            self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
+            self.commandDelegate.send(CDVPluginResult(status: .ok), callbackId: command.callbackId);
         }
     }
 
 
     @objc func closeNotification(_ command : CDVInvokedUrlCommand) {
         guard let id = command.argument(at: 0) as? String else {
-            self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_ERROR), callbackId: command.callbackId);
+            self.commandDelegate.send(CDVPluginResult(status: .error), callbackId: command.callbackId);
             return;
         }
 
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [id]);
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [id]);
 
-        self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
+        self.commandDelegate.send(CDVPluginResult(status: .ok), callbackId: command.callbackId);
     }
 
 
@@ -316,7 +316,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
                 return ret;
             };
 
-            self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK, messageAs:notifications), callbackId: command.callbackId);
+            self.commandDelegate.send(CDVPluginResult(status: .ok, messageAs:notifications), callbackId: command.callbackId);
         };
     }
 
