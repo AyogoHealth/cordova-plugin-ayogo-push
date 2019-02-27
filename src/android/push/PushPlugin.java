@@ -19,6 +19,7 @@ package com.ayogo.cordova.push;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -45,10 +46,6 @@ public class PushPlugin extends CordovaPlugin
     private static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
 
-    /** The Sender ID for GCM. */
-    protected String mSenderID = null;
-
-
     @Override
     protected void pluginInitialize() {
         LOG.v(TAG, "Initializing");
@@ -59,8 +56,6 @@ public class PushPlugin extends CordovaPlugin
             return;
         }
 
-        mSenderID = this.preferences.getString("fcm_sender_id", null);
-
         onNewIntent(cordova.getActivity().getIntent());
     }
 
@@ -68,11 +63,22 @@ public class PushPlugin extends CordovaPlugin
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callback)
     {
+        String senderID = null;
+        Activity activity = cordova.getActivity();
+
+        try {
+            senderID = activity.getString(activity.getResources().getIdentifier("gcm_defaultSenderId", "string", activity.getPackageName()));
+        } catch (Resources.NotFoundException e) {
+            senderID = this.preferences.getString("fcm_sender_id", null);
+        }
+
+        final String fSenderID = senderID;
+
         if (action.equals("registerPush") || action.equals("getPushRegistration")) {
             cordova.getThreadPool().execute(new Runnable() {
                 public void run() {
                     try {
-                        String deviceToken = FirebaseInstanceId.getInstance().getToken(mSenderID, FirebaseMessaging.INSTANCE_ID_SCOPE);
+                        String deviceToken = FirebaseInstanceId.getInstance().getToken(fSenderID, FirebaseMessaging.INSTANCE_ID_SCOPE);
 
                         callback.sendPluginResult(new PluginResult(PluginResult.Status.OK, wrapRegistrationData(deviceToken)));
                     } catch (IOException ex) {
@@ -88,7 +94,7 @@ public class PushPlugin extends CordovaPlugin
             cordova.getThreadPool().execute(new Runnable() {
                 public void run() {
                     try {
-                        FirebaseInstanceId.getInstance().deleteToken(mSenderID, FirebaseMessaging.INSTANCE_ID_SCOPE);
+                        FirebaseInstanceId.getInstance().deleteToken(fSenderID, FirebaseMessaging.INSTANCE_ID_SCOPE);
 
                         callback.sendPluginResult(new PluginResult(PluginResult.Status.OK));
                     } catch (IOException ex) {
