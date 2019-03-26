@@ -23,8 +23,8 @@ limitations under the License.
   <issues>https://github.com/AyogoHealth/cordova-plugin-ayogo-push/issues</issues>
 
   <engines>
-    <engine name="cordova-ios" version=">= 4.5.0" />
-    <engine name="cordova-android" version=">= 7.0.0" />
+    <engine name="cordova-ios" version=">= 5.0.0" />
+    <engine name="cordova-android" version=">= 8.0.0" />
   </engines>
 
   <js-module src="www/push.js" name="Push">
@@ -118,7 +118,7 @@ limitations under the License.
     <source-file src="src/android/notification/ScheduledNotificationManager.java" target-dir="src/com/ayogo/cordova/notification" />
     <source-file src="src/android/notification/TriggerReceiver.java" target-dir="src/com/ayogo/cordova/notification" />
 
-    <preference name="ANDROID_SUPPORT_V4_VERSION" default="27.+" />
+    <preference name="ANDROID_SUPPORT_V4_VERSION" default="28.+" />
     <preference name="FCM_VERSION" default="11.8.0" />
 
     <framework src="com.android.support:support-v4:$ANDROID_SUPPORT_V4_VERSION" />
