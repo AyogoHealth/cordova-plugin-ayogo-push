@@ -28,6 +28,9 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.util.Log;
 
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat.BigTextStyle;
+
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -89,14 +92,18 @@ public class MessagingService extends FirebaseMessagingService {
         }
 
         /* This will configure a heads-up notification. We need to set the priority as max and also enable the vibration. */
-        Notification.Builder notificationBuilder = new Notification.Builder(this)
-                .setSmallIcon(iconId)
-                .setContentTitle(remoteMessage.getNotification().getTitle())
-                .setContentText(remoteMessage.getNotification().getBody())
-                .setPriority(Notification.PRIORITY_MAX)
-                .setAutoCancel(true)
-                .setVibrate(new long[]{0, Notification.DEFAULT_VIBRATE})
-                .setContentIntent(pendingIntent);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+
+        builder
+            .setDefaults(Notification.DEFAULT_ALL)
+            .setTicker(remoteMessage.getNotification().getBody())
+            .setContentTitle(remoteMessage.getNotification().getTitle())
+            .setContentText(remoteMessage.getNotification().getBody())
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(remoteMessage.getNotification().getBody()))
+            .setPriority(Notification.PRIORITY_MAX)
+            .setVibrate(new long[]{0, Notification.DEFAULT_VIBRATE})
+            .setSmallIcon(iconId)
+            .setAutoCancel(true);
 
         Map<String, String> data = remoteMessage.getData();
 
@@ -112,7 +119,7 @@ public class MessagingService extends FirebaseMessagingService {
 
         /* Since android Oreo notification channel is needed. */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationBuilder.setChannelId(channelId);
+            builder.setChannelId(channelId);
 
             int appNameId = applicationInfo.labelRes;
 
@@ -126,6 +133,6 @@ public class MessagingService extends FirebaseMessagingService {
             notificationManager.createNotificationChannel(channel);
         }
 
-        notificationManager.notify(0, notificationBuilder.build());
+        notificationManager.notify(0, builder.build());
     }
 }
