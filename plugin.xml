@@ -90,8 +90,8 @@ limitations under the License.
       <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
       <meta-data android:name="firebase_crash_collection_enabled" android:value="false" />
 
-      <receiver android:name="com.ayogo.notification.TriggerReceiver" android:exported="false" />
-      <receiver android:name="com.ayogo.notification.RestoreReceiver" android:exported="false" >
+      <receiver android:name="com.ayogo.cordova.notification.TriggerReceiver" android:exported="false" />
+      <receiver android:name="com.ayogo.cordova.notification.RestoreReceiver" android:exported="false" >
         <intent-filter>
           <action android:name="android.intent.action.BOOT_COMPLETED" />
         </intent-filter>
