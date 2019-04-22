@@ -72,6 +72,7 @@ limitations under the License.
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="Push">
         <param name="android-package" value="com.ayogo.cordova.push.PushPlugin" />
+        <param name="onload" value="true" />
       </feature>
       <feature name="LocalNotification">
         <param name="android-package" value="com.ayogo.cordova.notification.NotificationPlugin"/>
