@@ -14,3 +14,6 @@ indent_size = 4
 
 [*.swift]
 indent_size = 4
+
+[*.m]
+indent_size = 4
