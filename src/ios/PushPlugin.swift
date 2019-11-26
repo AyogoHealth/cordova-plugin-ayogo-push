@@ -62,12 +62,10 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
     /* Notification Permission ***********************************************/
 
     @objc func hasPermission(_ command : CDVInvokedUrlCommand) {
-        _ = getPermission() { (permission) -> () in
-            print(permission as Any);
+        getPermission() { (permission) -> () in
             let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
             self.commandDelegate.send(result, callbackId: command.callbackId);
         }
-
     }
 
     func getPermission(completion: @escaping (_ result: String?) -> ()) {
