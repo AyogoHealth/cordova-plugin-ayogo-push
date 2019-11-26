@@ -43,15 +43,18 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
 
         // Re-register for notifications if we think we're registered
-        let permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
-        if permission == "granted" {
-            self._doRegister();
-        }
+        getPermission() { (permission) -> () in
+            if permission == "granted" {
+                self._doRegister();
+            }
 
-        let registration = UserDefaults.standard.object(forKey: CDV_PushRegistration);
-        if registration != nil {
-            UIApplication.shared.registerForRemoteNotifications();
-        }
+            let registration = UserDefaults.standard.object(forKey: CDV_PushRegistration);
+            if registration != nil {
+                DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications();
+                }
+            }
+        };
     }
 
 
@@ -59,8 +62,16 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
     /* Notification Permission ***********************************************/
 
     @objc func hasPermission(_ command : CDVInvokedUrlCommand) {
-        var permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
+        _ = getPermission() { (permission) -> () in
+            print(permission as Any);
+            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
+            self.commandDelegate.send(result, callbackId: command.callbackId);
+        }
 
+    }
+
+    func getPermission(completion: @escaping (_ result: String?) -> ()) {
+        var permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().getNotificationSettings { (settings) in
                 switch settings.authorizationStatus {
@@ -69,24 +80,20 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
                     case .authorized:
                         permission = "granted";
                     default:
-                        permission = permission ?? "default";
+                        permission = permission ?? "prompt";
                 }
-
-                let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
-                self.commandDelegate.send(result, callbackId: command.callbackId);
+                completion(permission!);
             }
         } else {
             if permission == nil {
-                permission = "default";
+                permission = "prompt";
             }
 
             // Ensure that it matches the current notification settings
-            if let settings = UIApplication.shared.currentUserNotificationSettings, settings.types == [] && permission != "default" {
+            if let settings = UIApplication.shared.currentUserNotificationSettings, settings.types == [] && permission != "prompt" {
                 permission = "denied";
             }
-
-            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
-            self.commandDelegate.send(result, callbackId: command.callbackId);
+            completion(permission!);
         }
     }
 
@@ -126,17 +133,17 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
     @objc func registerPush(_ command : CDVInvokedUrlCommand) {
         self.registrationCallback = command.callbackId;
+        getPermission() { (permission) -> () in
+            if permission != "denied" {
+                self._doRegister();
+            } else {
+                let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
+                self.commandDelegate.send(result, callbackId: self.registrationCallback);
 
-        let permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
+                self.registrationCallback = nil;
+            }
+        };
 
-        if permission != "denied" {
-            self._doRegister();
-        } else {
-            let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"AbortError");
-            self.commandDelegate.send(result, callbackId: self.registrationCallback);
-
-            self.registrationCallback = nil;
-        }
     }
 
 
@@ -210,15 +217,18 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
     /* Local Notification Scheduling *****************************************/
 
     @objc func requestPermission(_ command : CDVInvokedUrlCommand) {
-        let permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
 
-        if permission == nil {
-            self.permissionCallback = command.callbackId;
-            self._doRegister();
-        } else {
-            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs:permission);
-            self.commandDelegate.send(result, callbackId: command.callbackId);
+        getPermission() { (permission) -> () in
+            if permission == nil {
+                       self.permissionCallback = command.callbackId;
+                       self._doRegister();
+                   } else {
+                       let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs:permission);
+                       self.commandDelegate.send(result, callbackId: command.callbackId);
+                   }
         }
+
+
     }
 
 
@@ -231,48 +241,50 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
         let options = command.argument(at: 1) as? NSDictionary;
 
 
-        let permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
-        if permission != "granted" {
-            let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"TypeError");
-            self.commandDelegate.send(result, callbackId: command.callbackId);
-            return;
-        }
 
-
-        let id : String = options?.object(forKey: "tag") as? String ?? command.callbackId;
-
-        let content = UNMutableNotificationContent();
-        //content.sound = UNNotificationSound.`default`();
-
-        if let body = options?.object(forKey: "body") as? String {
-            content.body = body;
-            content.title = title;
-        } else {
-            content.body = title;
-        }
-
-        if let data = options?.object(forKey: "data") as? [NSObject : AnyObject] {
-            content.userInfo = data;
-        }
-
-        var trigger : UNNotificationTrigger? = nil;
-
-        if let at = (options?.object(forKey: "at") as AnyObject).doubleValue {
-            let scheduleDate = NSDate(timeIntervalSince1970: at/1000.0);
-            trigger = UNTimeIntervalNotificationTrigger.init(timeInterval: scheduleDate.timeIntervalSince(NSDate() as Date), repeats: false);
-        }
-
-        let request = UNNotificationRequest.init(identifier: id, content: content, trigger: trigger);
-
-        UNUserNotificationCenter.current().add(request) { (error) in
-            if error != nil{
-                let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "TypeError");
+        getPermission() { (permission) -> () in
+            if permission != "granted" {
+                let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"TypeError");
                 self.commandDelegate.send(result, callbackId: command.callbackId);
                 return;
             }
 
-            self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
-        }
+
+            let id : String = options?.object(forKey: "tag") as? String ?? command.callbackId;
+
+            let content = UNMutableNotificationContent();
+            //content.sound = UNNotificationSound.`default`();
+
+            if let body = options?.object(forKey: "body") as? String {
+                content.body = body;
+                content.title = title;
+            } else {
+                content.body = title;
+            }
+
+            if let data = options?.object(forKey: "data") as? [NSObject : AnyObject] {
+                content.userInfo = data;
+            }
+
+            var trigger : UNNotificationTrigger? = nil;
+
+            if let at = (options?.object(forKey: "at") as AnyObject).doubleValue {
+                let scheduleDate = NSDate(timeIntervalSince1970: at/1000.0);
+                trigger = UNTimeIntervalNotificationTrigger.init(timeInterval: scheduleDate.timeIntervalSince(NSDate() as Date), repeats: false);
+            }
+
+            let request = UNNotificationRequest.init(identifier: id, content: content, trigger: trigger);
+
+            UNUserNotificationCenter.current().add(request) { (error) in
+                if error != nil{
+                    let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "TypeError");
+                    self.commandDelegate.send(result, callbackId: command.callbackId);
+                    return;
+                }
+
+                self.commandDelegate.send(CDVPluginResult(status: CDVCommandStatus_OK), callbackId: command.callbackId);
+            }
+        };
     }
 
 

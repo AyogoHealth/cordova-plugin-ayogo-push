@@ -24,6 +24,18 @@
         stringByReplacingOccurrencesOfString:@">" withString:@""]
         stringByReplacingOccurrencesOfString:@" " withString:@""];
 
+    if (@available(iOS 13, *)) {
+        const unsigned char *dataBuffer = (const unsigned char *)[deviceToken bytes];
+
+        NSUInteger          dataLength  = [deviceToken length];
+        NSMutableString     *hexString  = [NSMutableString stringWithCapacity:(dataLength * 2)];
+
+        for (int i = 0; i < dataLength; ++i)
+            [hexString appendString:[NSString stringWithFormat:@"%02lx", (unsigned long)dataBuffer[i]]];
+
+        token = [NSString stringWithString:hexString];
+    }
+
     [NSNotificationCenter.defaultCenter postNotificationName: @"CordovaDidRegisterForRemoteNotificationsWithDeviceToken" object: token];
 }
 
