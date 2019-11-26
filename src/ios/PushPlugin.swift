@@ -43,7 +43,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
 
         // Re-register for notifications if we think we're registered
-        getPermission() { (permission) -> () in
+        _getPermission() { (permission) -> () in
             if permission == "granted" {
                 self._doRegister();
             }
@@ -62,13 +62,13 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
     /* Notification Permission ***********************************************/
 
     @objc func hasPermission(_ command : CDVInvokedUrlCommand) {
-        getPermission() { (permission) -> () in
+        _getPermission() { (permission) -> () in
             let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: permission);
             self.commandDelegate.send(result, callbackId: command.callbackId);
         }
     }
 
-    func getPermission(completion: @escaping (_ result: String?) -> ()) {
+    func _getPermission(completion: @escaping (_ result: String?) -> ()) {
         var permission = UserDefaults.standard.string(forKey: CDV_PushPreference);
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().getNotificationSettings { (settings) in
@@ -131,7 +131,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
     @objc func registerPush(_ command : CDVInvokedUrlCommand) {
         self.registrationCallback = command.callbackId;
-        getPermission() { (permission) -> () in
+        _getPermission() { (permission) -> () in
             if permission != "denied" {
                 self._doRegister();
             } else {
@@ -215,18 +215,15 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
     /* Local Notification Scheduling *****************************************/
 
     @objc func requestPermission(_ command : CDVInvokedUrlCommand) {
-
-        getPermission() { (permission) -> () in
+        _getPermission() { (permission) -> () in
             if permission == nil {
-                       self.permissionCallback = command.callbackId;
-                       self._doRegister();
-                   } else {
-                       let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs:permission);
-                       self.commandDelegate.send(result, callbackId: command.callbackId);
-                   }
+                self.permissionCallback = command.callbackId;
+                self._doRegister();
+            } else {
+                let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs:permission);
+                self.commandDelegate.send(result, callbackId: command.callbackId);
+            }
         }
-
-
     }
 
 
@@ -240,7 +237,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
 
 
-        getPermission() { (permission) -> () in
+        _getPermission() { (permission) -> () in
             if permission != "granted" {
                 let result = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs:"TypeError");
                 self.commandDelegate.send(result, callbackId: command.callbackId);

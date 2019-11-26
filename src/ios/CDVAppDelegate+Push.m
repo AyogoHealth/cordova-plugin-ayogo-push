@@ -19,22 +19,15 @@
 @implementation CDVAppDelegate (push)
 
 - (void) application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken: (NSData *) deviceToken {
-    NSString* token = [[[[deviceToken description]
-        stringByReplacingOccurrencesOfString:@"<" withString:@""]
-        stringByReplacingOccurrencesOfString:@">" withString:@""]
-        stringByReplacingOccurrencesOfString:@" " withString:@""];
+    const unsigned char *dataBuffer = (const unsigned char *)[deviceToken bytes];
 
-    if (@available(iOS 13, *)) {
-        const unsigned char *dataBuffer = (const unsigned char *)[deviceToken bytes];
+    NSUInteger          dataLength  = [deviceToken length];
+    NSMutableString     *hexString  = [NSMutableString stringWithCapacity:(dataLength * 2)];
 
-        NSUInteger          dataLength  = [deviceToken length];
-        NSMutableString     *hexString  = [NSMutableString stringWithCapacity:(dataLength * 2)];
+    for (int i = 0; i < dataLength; ++i)
+        [hexString appendString:[NSString stringWithFormat:@"%02lx", (unsigned long)dataBuffer[i]]];
 
-        for (int i = 0; i < dataLength; ++i)
-            [hexString appendString:[NSString stringWithFormat:@"%02lx", (unsigned long)dataBuffer[i]]];
-
-        token = [NSString stringWithString:hexString];
-    }
+     NSString* token = [NSString stringWithString:hexString];
 
     [NSNotificationCenter.defaultCenter postNotificationName: @"CordovaDidRegisterForRemoteNotificationsWithDeviceToken" object: token];
 }
