@@ -361,7 +361,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
             self.notificationData = notificationTextData;
         }
         if (self.pageHasLoaded) {
-            self.webViewEngine.evaluateJavaScript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: '\(self.notificationData!)' }));", completionHandler: nil)
+            self.webViewEngine.evaluateJavaScript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: \(self.notificationData!) }));", completionHandler: nil)
             self.notificationData = nil;
         }
     }
@@ -375,7 +375,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
             * and not dependent on certain pages loading lots of content thus the timeout here can be as small as 0.1s.
             */
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.webViewEngine.evaluateJavaScript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: '\(self.notificationData!)' }));", completionHandler: nil)
+                self.webViewEngine.evaluateJavaScript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: \(self.notificationData!) }));", completionHandler: nil)
                 self.notificationData = nil;
             }
         }
