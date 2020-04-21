@@ -362,6 +362,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
         }
         if (self.pageHasLoaded) {
             self.webViewEngine.evaluateJavaScript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: '\(self.notificationData!)' }));", completionHandler: nil)
+            self.notificationData = nil;
         }
     }
 
