@@ -44,18 +44,18 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
                 object: nil);
 
         NotificationCenter.default.addObserver(self,
-                selector: #selector(PushPlugin.handlePluginReset),
+                selector: #selector(PushPlugin._handlePluginReset),
                 name: NSNotification.Name.CDVPluginReset,
                 object: nil);
 
         NotificationCenter.default.addObserver(self,
-                selector: #selector(PushPlugin.handlePageLoad),
+                selector: #selector(PushPlugin._handlePageLoad),
                 name: NSNotification.Name.CDVPageDidLoad,
                 object: nil);
 
         NotificationCenter.default.addObserver(self,
-                selector: #selector(PushPlugin.handleNotificationData),
-                name: NSNotification.Name(rawValue: "CordovaDidRecieveRemoteNotification"),
+                selector: #selector(PushPlugin._handleNotificationData(_:)),
+                name: NSNotification.Name(rawValue: "CordovaDidReceiveRemoteNotification"),
                 object: nil);
 
 
@@ -346,11 +346,11 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
 
 
-    @objc internal func handlePluginReset() {
+    @objc internal func _handlePluginReset() {
         self.pageHasLoaded = false;
     }
 
-    @objc internal func handleNotificationData(_ notificationData : NSNotification) {
+    @objc internal func _handleNotificationData(_ notificationData : NSNotification) {
         guard let dataObject = notificationData.object else {
             return;
         }
@@ -365,7 +365,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
         }
     }
 
-    @objc internal func handlePageLoad() {
+    @objc internal func _handlePageLoad() {
         self.pageHasLoaded = true;
         if (self.notificationData != nil) {
             /**
@@ -373,8 +373,9 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
             * Wait 1s before dispatching the event to ensure that the page has finished loading. Listeners should be setup on an app level
             * and not dependent on certain pages loading lots of content thus the timeout here can be as small as 0.1s.
             */
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self.webViewEngine.evaluateJavaScript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: '\(self.notificationData!)' }));", completionHandler: nil)
+                self.notificationData = nil;
             }
         }
     }
@@ -401,7 +402,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
             }
 
-            NotificationCenter.default.post(name: NSNotification.Name(rawValue: "CordovaDidRecieveRemoteNotification"), object: options)
+            NotificationCenter.default.post(name: NSNotification.Name(rawValue: "CordovaDidReceiveRemoteNotification"), object: options)
         }
     }
 
