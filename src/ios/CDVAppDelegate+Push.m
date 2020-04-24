@@ -43,6 +43,8 @@
         [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:CDVPluginHandleOpenURLNotification object:url]];
     }
 
+    [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:@"CordovaDidReceiveRemoteNotification" object:userInfo]];
+
     completionHandler(UIBackgroundFetchResultNewData);
 }
 

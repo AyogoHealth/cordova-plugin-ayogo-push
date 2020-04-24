@@ -21,6 +21,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -30,12 +33,14 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PushPlugin extends CordovaPlugin
@@ -45,6 +50,8 @@ public class PushPlugin extends CordovaPlugin
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
+    private Boolean isPageFinished = false;
+    private Intent lastPushIntent;
 
     @Override
     protected void pluginInitialize() {
@@ -59,6 +66,30 @@ public class PushPlugin extends CordovaPlugin
         onNewIntent(cordova.getActivity().getIntent());
     }
 
+    @Override
+    public Object onMessage(String id, Object data) {
+        if(id.equals("onPageStarted")) {
+            this.isPageFinished = false;
+        }
+        if (id.equals("onPageFinished")) {
+            this.isPageFinished = true;
+            if (this.lastPushIntent != null) {
+                /**
+                * In the case that the page within the webview reloads on notification clicked the dispatched event fires into oblivion.
+                * Wait 1s before dispatching the event to ensure that the page has finished loading. Listeners should be setup on an app level
+                * and not dependent on certain pages loading lots of content thus the timeout here can be as small as 0.1s.
+                */
+                new android.os.Handler().postDelayed(
+                    new Runnable() {
+                        public void run() {
+                            handleNotificationData(lastPushIntent);
+                        }
+                    },
+                500);
+            }
+        }
+        return super.onMessage(id, data);
+    }
 
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callback)
@@ -132,7 +163,37 @@ public class PushPlugin extends CordovaPlugin
 
         if(intent.getAction() != null && intent.getAction().equalsIgnoreCase("push")) {
             handlePushIntent(intent);
+            this.lastPushIntent = intent;
+            if(this.isPageFinished) {
+                handleNotificationData(intent);
+            }
         }
+    }
+
+    /**
+     * Send intent extas to the application
+     * @param intent
+     */
+    private void handleNotificationData(Intent intent) {
+        JSONObject json = new JSONObject();
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            Set<String> keys = extras.keySet();
+            for (String key : keys) {
+                try {
+                    json.put(key, JSONObject.wrap(extras.get(key)));
+                } catch (JSONException e) {
+                // Do nothing for now
+                }
+            }
+        }
+
+        this.lastPushIntent = null;
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                webView.getEngine().evaluateJavascript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: "+ json +"}));", null);
+            }
+        });
     }
 
     private void handlePushIntent(Intent intent) {

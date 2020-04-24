@@ -23,6 +23,8 @@ let CDV_PushRegistration    = "CordovaPushRegistration";
 class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
     private var registrationCallback : String? = nil;
     private var permissionCallback : String? = nil;
+    private var notificationData: String? = nil;
+    private var pageHasLoaded: Bool = false;
 
 
     override func pluginInitialize() {
@@ -38,7 +40,22 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
         NotificationCenter.default.addObserver(self,
                 selector: #selector(PushPlugin._didFinishLaunchingWithOptions(_:)),
-                name: UIApplication.didFinishLaunchingNotification,
+                name: NSNotification.Name.UIApplicationDidFinishLaunching,
+                object: nil);
+
+        NotificationCenter.default.addObserver(self,
+                selector: #selector(PushPlugin._handlePluginReset),
+                name: NSNotification.Name.CDVPluginReset,
+                object: nil);
+
+        NotificationCenter.default.addObserver(self,
+                selector: #selector(PushPlugin._handlePageLoad),
+                name: NSNotification.Name.CDVPageDidLoad,
+                object: nil);
+
+        NotificationCenter.default.addObserver(self,
+                selector: #selector(PushPlugin._handleNotificationData(_:)),
+                name: NSNotification.Name(rawValue: "CordovaDidReceiveRemoteNotification"),
                 object: nil);
 
 
@@ -329,6 +346,41 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
 
 
+    @objc internal func _handlePluginReset() {
+        self.pageHasLoaded = false;
+    }
+
+    @objc internal func _handleNotificationData(_ notificationData : NSNotification) {
+        guard let dataObject = notificationData.object else {
+            return;
+        }
+
+        if let notificationJSONData = try? JSONSerialization.data(withJSONObject: dataObject,options: []) {
+            let notificationTextData = String(data: notificationJSONData,
+                                       encoding: .utf8)
+            self.notificationData = notificationTextData;
+        }
+        if (self.pageHasLoaded) {
+            self.webViewEngine.evaluateJavaScript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: \(self.notificationData!) }));", completionHandler: nil)
+            self.notificationData = nil;
+        }
+    }
+
+    @objc internal func _handlePageLoad() {
+        self.pageHasLoaded = true;
+        if (self.notificationData != nil) {
+            /**
+            * In the case that the page within the webview reloads on notification clicked the dispatched event fires into oblivion.
+            * Wait 1s before dispatching the event to ensure that the page has finished loading. Listeners should be setup on an app level
+            * and not dependent on certain pages loading lots of content thus the timeout here can be as small as 0.1s.
+            */
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.webViewEngine.evaluateJavaScript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: \(self.notificationData!) }));", completionHandler: nil)
+                self.notificationData = nil;
+            }
+        }
+    }
+
 
 
     /* Notification Launch URL handling **************************************/
@@ -348,7 +400,10 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
                 let data = NSURL(string: url);
 
                 NotificationCenter.default.post(name: NSNotification.Name.CDVPluginHandleOpenURL, object: data);
+
             }
+
+            NotificationCenter.default.post(name: NSNotification.Name(rawValue: "CordovaDidReceiveRemoteNotification"), object: options)
         }
     }
 
