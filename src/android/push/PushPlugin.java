@@ -158,7 +158,11 @@ public class PushPlugin extends CordovaPlugin
         }
       }
 
-      this.webView.getEngine().evaluateJavascript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: "+ json +"}));", null);
+      cordova.getActivity().runOnUiThread(new Runnable() {
+        public void run() {
+            webView.getEngine().evaluateJavascript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: "+ json +"}));", null);
+        }
+      });
     }
 
     private void handlePushIntent(Intent intent) {
