@@ -51,7 +51,7 @@ public class PushPlugin extends CordovaPlugin
     private static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
     private Boolean isPageFinished = false;
-    private Intent intent;
+    private Intent lastPushIntent;
 
     @Override
     protected void pluginInitialize() {
@@ -73,18 +73,18 @@ public class PushPlugin extends CordovaPlugin
         }
         if (id.equals("onPageFinished")) {
             this.isPageFinished = true;
-        if (intent != null) {
-            /**
-            * In the case that the page within the webview reloads on notification clicked the dispatched event fires into oblivion.
-            * Wait 1s before dispatching the event to ensure that the page has finished loading. Listeners should be setup on an app level
-            * and not dependent on certain pages loading lots of content thus the timeout here can be as small as 0.1s.
-            */
-            new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        handleNotificationData(intent);
-                    }
-                },
+            if (this.lastPushIntent != null) {
+                /**
+                * In the case that the page within the webview reloads on notification clicked the dispatched event fires into oblivion.
+                * Wait 1s before dispatching the event to ensure that the page has finished loading. Listeners should be setup on an app level
+                * and not dependent on certain pages loading lots of content thus the timeout here can be as small as 0.1s.
+                */
+                new android.os.Handler().postDelayed(
+                    new Runnable() {
+                        public void run() {
+                            handleNotificationData(lastPushIntent);
+                        }
+                    },
                 500);
             }
         }
@@ -163,7 +163,7 @@ public class PushPlugin extends CordovaPlugin
 
         if(intent.getAction() != null && intent.getAction().equalsIgnoreCase("push")) {
             handlePushIntent(intent);
-            this.intent = intent;
+            this.lastPushIntent = intent;
             if(this.isPageFinished) {
                 handleNotificationData(intent);
             }
@@ -188,7 +188,7 @@ public class PushPlugin extends CordovaPlugin
             }
         }
 
-        this.intent = null;
+        this.lastPushIntent = null;
         cordova.getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 webView.getEngine().evaluateJavascript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: "+ json +"}));", null);
