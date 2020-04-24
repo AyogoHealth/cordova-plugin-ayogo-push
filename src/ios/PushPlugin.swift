@@ -40,7 +40,7 @@ class PushPlugin : CDVPlugin, UNUserNotificationCenterDelegate {
 
         NotificationCenter.default.addObserver(self,
                 selector: #selector(PushPlugin._didFinishLaunchingWithOptions(_:)),
-                name: NSNotification.Name.UIApplicationDidFinishLaunching,
+                name: UIApplication.didFinishLaunchingNotification,
                 object: nil);
 
         NotificationCenter.default.addObserver(self,
