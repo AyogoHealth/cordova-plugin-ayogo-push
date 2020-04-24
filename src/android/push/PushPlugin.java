@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.Bundle;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -30,12 +31,14 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.LOG;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PushPlugin extends CordovaPlugin
@@ -132,7 +135,30 @@ public class PushPlugin extends CordovaPlugin
 
         if(intent.getAction() != null && intent.getAction().equalsIgnoreCase("push")) {
             handlePushIntent(intent);
+            handleNotificationData(intent);
         }
+
+    }
+
+    /**
+     * Send intent extas to the application
+     * @param intent
+     */
+    private void handleNotificationData(Intent intent) {
+      JSONObject json = new JSONObject();
+      Bundle extras = intent.getExtras();
+      if (extras != null) {
+        Set<String> keys = extras.keySet();
+        for (String key : keys) {
+          try {
+            json.put(key, JSONObject.wrap(extras.get(key)));
+          } catch (JSONException e) {
+            // Do nothing for now
+          }
+        }
+      }
+
+      this.webView.getEngine().evaluateJavascript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: "+ json +"}));", null);
     }
 
     private void handlePushIntent(Intent intent) {
