@@ -22,6 +22,8 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -48,6 +50,8 @@ public class PushPlugin extends CordovaPlugin
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
+    private Boolean isPageFinished = false;
+    private Intent intent;
 
     @Override
     protected void pluginInitialize() {
@@ -62,6 +66,30 @@ public class PushPlugin extends CordovaPlugin
         onNewIntent(cordova.getActivity().getIntent());
     }
 
+    @Override
+    public Object onMessage(String id, Object data) {
+        if(id.equals("onPageStarted")) {
+            this.isPageFinished = false;
+        }
+        if (id.equals("onPageFinished")) {
+            this.isPageFinished = true;
+        if (intent != null) {
+            /**
+            * In the case that the page within the webview reloads on notification clicked the dispatched event fires into oblivion.
+            * Wait 1s before dispatching the event to ensure that the page has finished loading. Listeners should be setup on an app level
+            * and not dependent on certain pages loading lots of content thus the timeout here can be as small as 0.1s.
+            */
+            new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        handleNotificationData(intent);
+                    }
+                },
+                500);
+            }
+        }
+        return super.onMessage(id, data);
+    }
 
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callback)
@@ -135,9 +163,11 @@ public class PushPlugin extends CordovaPlugin
 
         if(intent.getAction() != null && intent.getAction().equalsIgnoreCase("push")) {
             handlePushIntent(intent);
-            handleNotificationData(intent);
+            this.intent = intent;
+            if(this.isPageFinished) {
+                handleNotificationData(intent);
+            }
         }
-
     }
 
     /**
@@ -145,24 +175,25 @@ public class PushPlugin extends CordovaPlugin
      * @param intent
      */
     private void handleNotificationData(Intent intent) {
-      JSONObject json = new JSONObject();
-      Bundle extras = intent.getExtras();
-      if (extras != null) {
-        Set<String> keys = extras.keySet();
-        for (String key : keys) {
-          try {
-            json.put(key, JSONObject.wrap(extras.get(key)));
-          } catch (JSONException e) {
-            // Do nothing for now
-          }
+        JSONObject json = new JSONObject();
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            Set<String> keys = extras.keySet();
+            for (String key : keys) {
+                try {
+                    json.put(key, JSONObject.wrap(extras.get(key)));
+                } catch (JSONException e) {
+                // Do nothing for now
+                }
+            }
         }
-      }
 
-      cordova.getActivity().runOnUiThread(new Runnable() {
-        public void run() {
-            webView.getEngine().evaluateJavascript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: "+ json +"}));", null);
-        }
-      });
+        this.intent = null;
+        cordova.getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                webView.getEngine().evaluateJavascript("window.dispatchEvent(new CustomEvent('CDVnotificationClicked', { detail: "+ json +"}));", null);
+            }
+        });
     }
 
     private void handlePushIntent(Intent intent) {
