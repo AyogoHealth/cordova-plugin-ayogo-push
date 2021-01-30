@@ -24,7 +24,7 @@ limitations under the License.
 
   <engines>
     <engine name="cordova-ios" version=">= 5.0.0" />
-    <engine name="cordova-android" version=">= 8.0.0" />
+    <engine name="cordova-android" version=">= 9.0.0" />
   </engines>
 
   <js-module src="www/push.js" name="Push">
@@ -77,6 +77,9 @@ limitations under the License.
       <feature name="LocalNotification">
         <param name="android-package" value="com.ayogo.cordova.notification.NotificationPlugin"/>
       </feature>
+
+      <preference name="GradlePluginGoogleServicesEnabled" value="true" />
+      <preference name="GradlePluginGoogleServicesVersion" value="$GOOGLE_SERVICES_PLUGIN_VERSION" />
     </config-file>
 
     <config-file target="AndroidManifest.xml" parent="/manifest/application/activity">
@@ -121,11 +124,11 @@ limitations under the License.
 
     <preference name="ANDROID_SUPPORT_V4_VERSION" default="28.+" />
     <preference name="FCM_VERSION" default="11.8.0" />
+    <preference name="GOOGLE_SERVICES_PLUGIN_VERSION" default="4.2.0" />
 
     <framework src="com.android.support:support-v4:$ANDROID_SUPPORT_V4_VERSION" />
     <framework src="com.google.android.gms:play-services-base:$FCM_VERSION" />
     <framework src="com.google.firebase:firebase-messaging:$FCM_VERSION" />
     <framework src="com.google.firebase:firebase-core:$FCM_VERSION" />
-    <framework src="src/android/push.gradle" custom="true" type="gradleReference" />
   </platform>
 </plugin>
