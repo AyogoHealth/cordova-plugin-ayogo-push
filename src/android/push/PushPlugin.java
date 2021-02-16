@@ -74,6 +74,8 @@ public class PushPlugin extends CordovaPlugin
         if (id.equals("onPageFinished")) {
             this.isPageFinished = true;
             if (this.lastPushIntent != null) {
+                final Intent pushIntent = this.lastPushIntent;
+
                 /**
                 * In the case that the page within the webview reloads on notification clicked the dispatched event fires into oblivion.
                 * Wait 1s before dispatching the event to ensure that the page has finished loading. Listeners should be setup on an app level
@@ -82,7 +84,7 @@ public class PushPlugin extends CordovaPlugin
                 new android.os.Handler().postDelayed(
                     new Runnable() {
                         public void run() {
-                            handleNotificationData(lastPushIntent);
+                            handleNotificationData(pushIntent);
                         }
                     },
                 500);
